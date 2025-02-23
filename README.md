@@ -1,4 +1,4 @@
-# 🚀 Project Name
+# 🚀 Visite d'Entreprise
 
 ## 📌 Project Overview
 This is a **Spring Boot Monolithic Application** that includes authentication (JWT), visit management, notifications, transport management, and document storage.
