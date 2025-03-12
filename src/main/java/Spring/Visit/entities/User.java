@@ -1,4 +1,5 @@
-package Spring.Visit.entities.User_Package;
+package Spring.Visit.entities;
+import Spring.Visit.dto.CreateUserDTO;
 import Spring.Visit.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -43,12 +44,19 @@ public class User {
     private UserRole role;
 
     private LocalDateTime lastLogin;
-
     @NotNull(message = "Created at timestamp is required")
     private LocalDateTime createdAt;
 
     @NotNull(message = "Updated at timestamp is required")
     private LocalDateTime updatedAt;
+
+    public User(CreateUserDTO user) {
+        email = user.getEmail();
+        password = user.getPassword();
+        firstName = user.getFirstName();
+        lastName = user.getLastName();
+        role = user.getRole();
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -67,16 +75,5 @@ public class User {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    public User(User user){
-        id = user.getId();
-        email = user.getEmail();
-        password = user.getPassword();
-        firstName = user.getFirstName();
-        lastName = user.getLastName();
-        role = user.getRole();
-        lastLogin = user.getLastLogin();
-        createdAt = user.getCreatedAt();
-        updatedAt = user.getUpdatedAt();
-    }
 
 }

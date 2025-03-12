@@ -1,6 +1,6 @@
 package Spring.Visit.repositories;
 
-import Spring.Visit.entities.User_Package.Teacher;
+import Spring.Visit.entities.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package Spring.Visit.services;
 
-import Spring.Visit.entities.User_Package.User;
+import Spring.Visit.entities.User;
 import Spring.Visit.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

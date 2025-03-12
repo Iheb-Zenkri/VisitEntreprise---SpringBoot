@@ -1,23 +1,34 @@
 package Spring.Visit.services;
 
+import Spring.Visit.dto.CreateUserDTO;
 import Spring.Visit.dto.LoginDTO;
-import Spring.Visit.entities.User_Package.Student;
-import Spring.Visit.entities.User_Package.Teacher;
-import Spring.Visit.entities.User_Package.Admin;
-import Spring.Visit.entities.User_Package.User;
+import Spring.Visit.dto.UpdateUserDTO;
+import Spring.Visit.dto.UserDTO;
+import Spring.Visit.entities.Student;
+import Spring.Visit.entities.Teacher;
+import Spring.Visit.entities.Admin;
+import Spring.Visit.entities.User;
+import Spring.Visit.enums.UserRole;
 import Spring.Visit.exceptions.InvalidCredentialsException;
 import Spring.Visit.exceptions.UserNotFoundException;
 import Spring.Visit.repositories.AdminRepository;
 import Spring.Visit.repositories.StudentRepository;
 import Spring.Visit.repositories.TeacherRepository;
 import Spring.Visit.repositories.UserRepository;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import Spring.Visit.utils.JwtUtil;
+import org.modelmapper.ModelMapper;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final JwtUtil jwtUtil;
@@ -26,37 +37,23 @@ public class UserService {
     private final TeacherRepository teacherRepository;
     private final AdminRepository adminRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ModelMapper modelMapper;
 
-    public UserService(JwtUtil jwtUtil, UserRepository userRepository, StudentRepository studentRepository, TeacherRepository teacherRepository, AdminRepository adminRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
-        this.studentRepository = studentRepository;
-        this.teacherRepository = teacherRepository;
-        this.adminRepository = adminRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
 
-    public User registerUser(User user) {
-        // Encrypt password
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    public UserDTO registerUser(CreateUserDTO dto) {
+        String encodedPassword = bCryptPasswordEncoder.encode(dto.getPassword());
+        dto.setPassword(encodedPassword);
 
-        switch (user.getRole()) {
-            case STUDENT -> {
-                Student student = new Student(user);
-                user = studentRepository.save(student);
-            }
-            case TEACHER -> {
-                Teacher teacher = new Teacher(user);
-                user = teacherRepository.save(teacher);
-            }
-            case ADMIN -> {
-                Admin admin = new Admin(user);
-                user = adminRepository.save(admin);
-            }
+        User user;
+
+        switch (dto.getRole()) {
+            case STUDENT -> user = studentRepository.save(new Student(dto));
+            case TEACHER -> user = teacherRepository.save(new Teacher(dto));
+            case ADMIN -> user = adminRepository.save(new Admin(dto));
             default -> throw new RuntimeException("Invalid role");
         }
 
-        return user;
+        return modelMapper.map(user, UserDTO.class);
     }
 
     public String authenticateUser(LoginDTO loginDTO) {
@@ -67,11 +64,55 @@ public class UserService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        // Update lastLogin timestamp
         dbUser.setLastLogin(LocalDateTime.now());
         userRepository.save(dbUser);
 
-        // Generate JWT token
         return jwtUtil.generateToken(dbUser.getEmail());
     }
+
+    public Page<UserDTO> getAllUsers(UserRole role, Pageable pageable) {
+        if (role != null) {
+            return userRepository.findByRole(role, pageable)
+                    .map(user -> modelMapper.map(user, UserDTO.class));
+        }
+        return userRepository.findAll(pageable)
+                .map(user -> modelMapper.map(user, UserDTO.class));
+
+    }
+
+    public UserDTO getUserByEmail(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
+        return UserDTO.toUserDTO(user);
+    }
+
+    public UserDTO updateUser(int id, UpdateUserDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with email " + dto.getEmail() + " not found"));
+
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new InvalidCredentialsException("Email is already in use");
+            }
+            user.setEmail(dto.getEmail());
+        }
+        if (dto.getFirstName() != null) {
+            user.setFirstName(dto.getFirstName());
+        }
+        if (dto.getLastName() != null) {
+            user.setLastName(dto.getLastName());
+        }
+        if (dto.getPassword() != null) {
+            user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword())); // Hash password before saving
+        }
+
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDTO.class);
+    }
+
+    public void deleteUser(int id) {
+        userRepository.deleteById(id);
+    }
+
+
 }

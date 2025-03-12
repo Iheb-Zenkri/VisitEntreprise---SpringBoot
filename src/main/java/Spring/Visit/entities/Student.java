@@ -1,6 +1,6 @@
-package Spring.Visit.entities.User_Package;
+package Spring.Visit.entities;
 
-import jakarta.persistence.DiscriminatorValue;
+import Spring.Visit.dto.CreateUserDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -9,13 +9,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "teachers")
+@Table(name = "students")
 @PrimaryKeyJoinColumn(name = "user_id")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Teacher extends User {
-    public Teacher(User user){
-        super(user);
-    }
-}
+public class Student extends User {
+    public Student(CreateUserDTO dto) {
+        super(dto);
+    }}
