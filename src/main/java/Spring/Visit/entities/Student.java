@@ -1,9 +1,8 @@
 package Spring.Visit.entities;
 
 import Spring.Visit.dto.CreateUserDTO;
-import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,4 +16,10 @@ import lombok.NoArgsConstructor;
 public class Student extends User {
     public Student(CreateUserDTO dto) {
         super(dto);
-    }}
+    }
+
+    @ManyToOne
+    @JoinColumn(name="group_id")
+    @JsonBackReference
+    private Group group;
+}
