@@ -44,6 +44,7 @@ public class User {
     private UserRole role;
 
     private LocalDateTime lastLogin;
+
     @NotNull(message = "Created at timestamp is required")
     private LocalDateTime createdAt;
 
