@@ -8,6 +8,8 @@ import Spring.Visit.SharedPackage.exceptions.UserNotFoundException;
 import Spring.Visit.UserPackage.repositories.TeacherRepository;
 import Spring.Visit.UserPackage.repositories.UnavailabilityRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -22,14 +24,16 @@ public class UnavailabilityService {
         return unavailabilityRepository.findByTeacherId(teacherId);
     }
 
-    public Unavailability addUnavailability(Long teacherId, Unavailability unavailability) {
+    public Unavailability addUnavailability( Unavailability unavailability) {
+        Long teacherId = getAuthenticatedTeacherId() ;
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
         unavailability.setTeacher(teacher);
         return unavailabilityRepository.save(unavailability);
     }
 
-    public Unavailability updateUnavailability(Long teacherId, Long unavailabilityId, Unavailability newUnavailability) {
+    public Unavailability updateUnavailability(Long unavailabilityId, Unavailability newUnavailability) {
+        Long teacherId = getAuthenticatedTeacherId() ;
         Unavailability unavailability = unavailabilityRepository.findById(unavailabilityId)
                 .orElseThrow(() -> new ObjectNotFoundException("Unavailability not found"));
 
@@ -44,7 +48,9 @@ public class UnavailabilityService {
     }
 
 
-    public void deleteUnavailability(Long teacherId, Long unavailabilityId) {
+    public void deleteUnavailability(Long unavailabilityId) {
+        Long teacherId = getAuthenticatedTeacherId() ;
+
         Unavailability unavailability = unavailabilityRepository.findById(unavailabilityId)
                 .orElseThrow(() -> new ObjectNotFoundException("Unavailability not found"));
 
@@ -52,6 +58,17 @@ public class UnavailabilityService {
             throw new InvalidCredentialsException("You are not allowed to delete this schedule block.");
         }
         unavailabilityRepository.deleteById(unavailabilityId);
+    }
+
+    private Long getAuthenticatedTeacherId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            return (long) teacherRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserNotFoundException("Teacher not found"))
+                    .getId();
+        }
+        throw new InvalidCredentialsException("User is not authenticated");
     }
 }
 

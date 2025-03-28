@@ -4,15 +4,19 @@ import Spring.Visit.DocumentPackage.entities.Document;
 import Spring.Visit.DocumentPackage.entities.ProfilePicture;
 import Spring.Visit.DocumentPackage.repositories.ProfilePictureRepository;
 import Spring.Visit.SharedPackage.exceptions.BadRequestException;
+import Spring.Visit.SharedPackage.exceptions.InvalidCredentialsException;
 import Spring.Visit.SharedPackage.exceptions.ObjectNotFoundException;
 import Spring.Visit.SharedPackage.exceptions.UserNotFoundException;
 import Spring.Visit.UserPackage.entities.User;
 import Spring.Visit.UserPackage.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.Objects;
 
 @Service
 public class ProfilePictureService {
@@ -28,6 +32,10 @@ public class ProfilePictureService {
 
     @Transactional
     public ProfilePicture uploadProfilePicture(MultipartFile file, Long userId) throws IOException {
+
+        if(!Objects.equals(userId, getAuthenticatedUserId())){
+            throw new InvalidCredentialsException("You are not allowed to manage Profile picture of another user.");
+        }
 
         if(!file.getContentType().startsWith("image")){
             throw new BadRequestException("Profile Picture must be of type Image");
@@ -74,6 +82,11 @@ public class ProfilePictureService {
     }
 
     public boolean deleteProfilePicture(Long userId) throws IOException {
+
+        if(!Objects.equals(userId, getAuthenticatedUserId())){
+            throw new InvalidCredentialsException("You are not allowed to manage Profile picture of another user.");
+        }
+
         ProfilePicture profilePicture =profilePictureRepository.findByUserId(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Profile picture not found"));
 
@@ -83,6 +96,17 @@ public class ProfilePictureService {
         documentService.deleteDocument(profilePicture.getDocument().getId());
 
         return true;
+    }
+
+    private Long getAuthenticatedUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            return (long) userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserNotFoundException("Teacher not found"))
+                    .getId();
+        }
+        throw new InvalidCredentialsException("User is not authenticated");
     }
 }
 

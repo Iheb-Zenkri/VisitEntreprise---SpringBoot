@@ -1,5 +1,6 @@
 package Spring.Visit.UserPackage.services;
 
+import Spring.Visit.SharedPackage.exceptions.BadRequestException;
 import Spring.Visit.UserPackage.dto.StudentGroupDTO;
 import Spring.Visit.UserPackage.entities.Group;
 import Spring.Visit.UserPackage.entities.Student;
@@ -40,7 +41,7 @@ public class GroupService {
         Group group = groupRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Group not found"));
 
-        if(name.isBlank()) throw new InvalidCredentialsException("the new Group Name is empty!");
+        if(name.isBlank()) throw new BadRequestException("the new Group Name is empty!");
         group.setName(name);
          return StudentGroupDTO.toStudentGroupDTO(groupRepository.save(group));
     }
