@@ -49,9 +49,9 @@ public class FileStorageService {
         return new FileSystemResource(filePath.toFile());
     }
 
-    public boolean deleteFile(String fileName) throws IOException {
+    public void deleteFile(String fileName) throws IOException {
         Path filePath = Paths.get(UPLOAD_DIR, fileName);
-        return Files.deleteIfExists(filePath);
+        Files.deleteIfExists(filePath);
     }
 
     private String getFileExtension(String fileName) {

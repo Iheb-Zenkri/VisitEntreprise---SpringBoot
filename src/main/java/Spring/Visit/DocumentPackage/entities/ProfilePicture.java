@@ -16,7 +16,7 @@ public class ProfilePicture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
 

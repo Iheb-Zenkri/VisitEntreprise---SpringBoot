@@ -48,9 +48,10 @@ public class DocumentService {
         Document doc = documentRepository.findById(documentId)
                 .orElseThrow(() -> new ObjectNotFoundException("Document not found"));
 
-        if(fileStorageService.deleteFile(doc.getUniqueName())){
-            documentRepository.delete(doc);
-        }
+        fileStorageService.deleteFile(doc.getUniqueName());
+        documentRepository.delete(doc);
+
+        System.out.println("document with id : "+documentId+" deleted successfully");
         return !documentRepository.existsById(doc.getId());
     }
 }

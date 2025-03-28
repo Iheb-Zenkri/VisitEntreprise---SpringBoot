@@ -4,7 +4,6 @@ import Spring.Visit.DocumentPackage.entities.Document;
 import Spring.Visit.DocumentPackage.entities.ProfilePicture;
 import Spring.Visit.DocumentPackage.repositories.ProfilePictureRepository;
 import Spring.Visit.SharedPackage.exceptions.BadRequestException;
-import Spring.Visit.SharedPackage.exceptions.InvalidCredentialsException;
 import Spring.Visit.SharedPackage.exceptions.ObjectNotFoundException;
 import Spring.Visit.SharedPackage.exceptions.UserNotFoundException;
 import Spring.Visit.UserPackage.entities.User;
@@ -13,8 +12,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @Service
@@ -45,14 +42,24 @@ public class ProfilePictureService {
         ProfilePicture existingProfilePicture = profilePictureRepository.findByUserId(userId).orElse(null);
 
         if (existingProfilePicture != null) {
-            documentService.deleteDocument(existingProfilePicture.getDocument().getId());
-            profilePictureRepository.delete(existingProfilePicture);
-        }
+            //// in case of replacing the old Picture with new one
+            //// extract the old document id (old picture file)
+            Long oldDocumentId = existingProfilePicture.getDocument().getId();
 
-        ProfilePicture profilePicture = new ProfilePicture();
-        profilePicture.setDocument(document);
-        profilePicture.setUser(user);
-        return profilePictureRepository.save(profilePicture);
+            //// replace the old document by the new document in the exciting profile picture and save it on DB
+            existingProfilePicture.setDocument(document);
+            profilePictureRepository.save(existingProfilePicture);
+
+            //// delete the old document and return the new profile picture
+            documentService.deleteDocument(oldDocumentId);
+            return existingProfilePicture ;
+        }else{
+            //// in case of a new Profile picture
+            ProfilePicture profilePicture = new ProfilePicture();
+            profilePicture.setDocument(document);
+            profilePicture.setUser(user);
+            return profilePictureRepository.save(profilePicture);
+        }
     }
 
     public FileSystemResource getProfilePicture(Long userId) {
