@@ -52,7 +52,7 @@ public class DocumentService {
         documentRepository.delete(doc);
 
         System.out.println("document with id : "+documentId+" deleted successfully");
-        return !documentRepository.existsById(doc.getId());
+        return true;
     }
 }
 
