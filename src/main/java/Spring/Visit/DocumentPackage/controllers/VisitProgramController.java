@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.controllers;
 
+import Spring.Visit.DocumentPackage.dtos.VisitProgramDTO;
 import Spring.Visit.DocumentPackage.entities.VisitProgram;
 import Spring.Visit.DocumentPackage.services.VisitProgramService;
 import org.springframework.http.ResponseEntity;
@@ -19,25 +20,25 @@ public class VisitProgramController {
     }
 
     @PostMapping("/{visitId}")
-    public ResponseEntity<VisitProgram> createVisitProgram(@PathVariable Long visitId,
-                                                           @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<VisitProgramDTO> createVisitProgram(@PathVariable Long visitId,
+                                                              @RequestParam("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(visitProgramService.createVisitProgram(visitId, file));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VisitProgram> updateVisitProgramDocument(@PathVariable Long id,
+    public ResponseEntity<VisitProgramDTO> updateVisitProgramDocument(@PathVariable Long id,
                                                                    @RequestParam("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(visitProgramService.updateVisitProgramDocument(id, file));
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<VisitProgram> getVisitProgram(@PathVariable Long id) {
+    public ResponseEntity<VisitProgramDTO> getVisitProgram(@PathVariable Long id) {
         return ResponseEntity.ok(visitProgramService.getVisitProgram(id));
     }
 
     @GetMapping("/by-visit/{visitId}")
-    public ResponseEntity<VisitProgram> getVisitProgramByVisitId(@PathVariable Long visitId) {
+    public ResponseEntity<VisitProgramDTO> getVisitProgramByVisitId(@PathVariable Long visitId) {
         return ResponseEntity.ok(visitProgramService.getVisitProgramByVisitId(visitId));
     }
 

@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.services;
 
+import Spring.Visit.DocumentPackage.dtos.ProfilePictureDTO;
 import Spring.Visit.DocumentPackage.entities.Document;
 import Spring.Visit.DocumentPackage.entities.ProfilePicture;
 import Spring.Visit.DocumentPackage.repositories.ProfilePictureRepository;
@@ -31,7 +32,7 @@ public class ProfilePictureService {
     }
 
     @Transactional
-    public ProfilePicture uploadProfilePicture(MultipartFile file, Long userId) throws IOException {
+    public ProfilePictureDTO uploadProfilePicture(MultipartFile file, Long userId) throws IOException {
 
         if(!Objects.equals(userId, getAuthenticatedUserId())){
             throw new InvalidCredentialsException("You are not allowed to manage Profile picture of another user.");
@@ -60,13 +61,13 @@ public class ProfilePictureService {
 
             //// delete the old document and return the new profile picture
             documentService.deleteDocument(oldDocumentId);
-            return existingProfilePicture ;
+            return ProfilePictureDTO.toProfilePictureDTO(existingProfilePicture);
         }else{
             //// in case of a new Profile picture
             ProfilePicture profilePicture = new ProfilePicture();
             profilePicture.setDocument(document);
             profilePicture.setUser(user);
-            return profilePictureRepository.save(profilePicture);
+            return ProfilePictureDTO.toProfilePictureDTO(profilePictureRepository.save(profilePicture));
         }
     }
 

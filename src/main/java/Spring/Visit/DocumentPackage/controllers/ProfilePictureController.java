@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.controllers;
 
+import Spring.Visit.DocumentPackage.dtos.ProfilePictureDTO;
 import Spring.Visit.DocumentPackage.entities.ProfilePicture;
 import Spring.Visit.DocumentPackage.services.ProfilePictureService;
 import jakarta.annotation.Resource;
@@ -23,10 +24,10 @@ public class ProfilePictureController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<ProfilePicture> uploadProfilePicture(@RequestParam("file") MultipartFile file,
-                                                               @RequestParam("userId") Long userId) {
+    public ResponseEntity<ProfilePictureDTO> uploadProfilePicture(@RequestParam("file") MultipartFile file,
+                                                                  @RequestParam("userId") Long userId) {
         try {
-            ProfilePicture profilePicture = profilePictureService.uploadProfilePicture(file, userId);
+            ProfilePictureDTO profilePicture = profilePictureService.uploadProfilePicture(file, userId);
             return ResponseEntity.ok(profilePicture);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

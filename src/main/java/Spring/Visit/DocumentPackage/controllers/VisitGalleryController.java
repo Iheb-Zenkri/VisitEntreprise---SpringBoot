@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.controllers;
 
+import Spring.Visit.DocumentPackage.dtos.VisitGalleryDTO;
 import Spring.Visit.DocumentPackage.entities.VisitGallery;
 import Spring.Visit.DocumentPackage.services.VisitGalleryService;
 import org.springframework.http.ResponseEntity;
@@ -18,25 +19,31 @@ public class VisitGalleryController {
         this.visitGalleryService = visitGalleryService;
     }
 
-    @PostMapping("/new/{visitId}")
-    public ResponseEntity<VisitGallery> createVisitGallery(@PathVariable Long visitId) {
-        VisitGallery visitGallery = visitGalleryService.newVisitGallery(visitId);
+    @PostMapping("/{visitId}")
+    public ResponseEntity<VisitGalleryDTO> createVisitGallery(@PathVariable Long visitId) {
+        VisitGalleryDTO visitGallery = visitGalleryService.newVisitGallery(visitId);
         return ResponseEntity.ok(visitGallery);
     }
 
     @PostMapping("/{visitGalleryId}/add-picture")
-    public ResponseEntity<VisitGallery> addPictureToGallery(
+    public ResponseEntity<VisitGalleryDTO> addPictureToGallery(
             @PathVariable Long visitGalleryId,
             @RequestParam("file") MultipartFile file) throws IOException {
-        VisitGallery updatedGallery = visitGalleryService.addPictureToGallery(file, visitGalleryId);
+        VisitGalleryDTO updatedGallery = visitGalleryService.addPictureToGallery(file, visitGalleryId);
         return ResponseEntity.ok( updatedGallery);
     }
 
+    @GetMapping("/{visitGalleryId}")
+    public ResponseEntity<VisitGalleryDTO> getVisitGallery(@PathVariable Long visitGalleryId) {
+        VisitGalleryDTO visitGallery = visitGalleryService.getGalleryById(visitGalleryId);
+        return ResponseEntity.ok(visitGallery);
+    }
+
     @DeleteMapping("/{visitGalleryId}/remove-picture/{documentId}")
-    public ResponseEntity<VisitGallery> removePictureFromGallery(
+    public ResponseEntity<VisitGalleryDTO> removePictureFromGallery(
             @PathVariable Long visitGalleryId,
             @PathVariable Long documentId) {
-        VisitGallery updatedGallery = visitGalleryService.removePictureFromGallery(visitGalleryId, documentId);
+        VisitGalleryDTO updatedGallery = visitGalleryService.removePictureFromGallery(visitGalleryId, documentId);
         return ResponseEntity.ok(updatedGallery);
     }
 

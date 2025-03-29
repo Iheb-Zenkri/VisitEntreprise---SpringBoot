@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.services;
 
+import Spring.Visit.DocumentPackage.dtos.VisitProgramDTO;
 import Spring.Visit.DocumentPackage.entities.Document;
 import Spring.Visit.DocumentPackage.entities.VisitProgram;
 import Spring.Visit.DocumentPackage.repositories.VisitProgramRepository;
@@ -35,7 +36,7 @@ public class VisitProgramService {
     }
 
     @Transactional
-    public VisitProgram createVisitProgram(Long visitId, MultipartFile file) throws IOException {
+    public VisitProgramDTO createVisitProgram(Long visitId, MultipartFile file) throws IOException {
         User authenticatedUser = getAuthenticatedUser();
 
         String contentType = file.getContentType();
@@ -49,11 +50,11 @@ public class VisitProgramService {
         visitProgram.setVisitId(visitId);
         visitProgram.setAddedBy(authenticatedUser);
         visitProgram.setDocument(document);
-        return visitProgramRepository.save(visitProgram);
+        return VisitProgramDTO.toVisitProgramDTO(visitProgramRepository.save(visitProgram));
     }
 
     @Transactional
-    public VisitProgram updateVisitProgramDocument(Long visitProgramId, MultipartFile file) throws IOException {
+    public VisitProgramDTO updateVisitProgramDocument(Long visitProgramId, MultipartFile file) throws IOException {
         VisitProgram visitProgram = visitProgramRepository.findById(visitProgramId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Program not found"));
 
@@ -73,17 +74,19 @@ public class VisitProgramService {
         documentService.deleteDocument(visitProgram.getDocument().getId());
         visitProgram.setDocument(newDocument);
 
-        return visitProgramRepository.save(visitProgram);
+        return VisitProgramDTO.toVisitProgramDTO(visitProgramRepository.save(visitProgram));
     }
 
-    public VisitProgram getVisitProgram(Long visitProgramId) {
-        return visitProgramRepository.findById(visitProgramId)
+    public VisitProgramDTO getVisitProgram(Long visitProgramId) {
+        VisitProgram visitProgram = visitProgramRepository.findById(visitProgramId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Program not found"));
+        return VisitProgramDTO.toVisitProgramDTO(visitProgram);
     }
 
-    public VisitProgram getVisitProgramByVisitId(Long visitId) {
-        return visitProgramRepository.findByVisitId(visitId)
+    public VisitProgramDTO getVisitProgramByVisitId(Long visitId) {
+        VisitProgram visitProgram =  visitProgramRepository.findByVisitId(visitId)
                 .orElseThrow(() -> new ObjectNotFoundException("No Visit Program found for visitId: " + visitId));
+        return VisitProgramDTO.toVisitProgramDTO(visitProgram);
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package Spring.Visit.DocumentPackage.services;
 
+import Spring.Visit.DocumentPackage.dtos.VisitGalleryDTO;
 import Spring.Visit.DocumentPackage.entities.Document;
 import Spring.Visit.DocumentPackage.entities.VisitGallery;
 import Spring.Visit.DocumentPackage.repositories.VisitGalleryRepository;
@@ -30,18 +31,19 @@ public class VisitGalleryService {
         this.userRepository = userRepository;
     }
 
-    public VisitGallery newVisitGallery(Long visitId){
+    public VisitGalleryDTO newVisitGallery(Long visitId){
         VisitGallery visitGallery = new VisitGallery();
         visitGallery.setVisitId(visitId);
         visitGallery.setAddedBy(getAuthenticatedUser());
-        return visitGalleryRepository.save(visitGallery);
+        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
     }
-    public VisitGallery getGalleryById(Long visitGalleryId) {
-        return visitGalleryRepository.findById(visitGalleryId)
+    public VisitGalleryDTO getGalleryById(Long visitGalleryId) {
+        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId));
+        return VisitGalleryDTO.toVisitGalleryDTO(visitGallery);
     }
     @Transactional
-    public VisitGallery addPictureToGallery(MultipartFile file, Long visitGalleryId) throws IOException{
+    public VisitGalleryDTO addPictureToGallery(MultipartFile file, Long visitGalleryId) throws IOException{
         VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery with id "+visitGalleryId+" not Found."));
 
@@ -57,9 +59,9 @@ public class VisitGalleryService {
 
         visitGallery.addNewPictureToGallery(document);
 
-        return visitGalleryRepository.save(visitGallery);
+        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
     }
-    public VisitGallery removePictureFromGallery(Long visitGalleryId,Long documentId){
+    public VisitGalleryDTO removePictureFromGallery(Long visitGalleryId,Long documentId){
         VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery with id "+visitGalleryId+" not Found."));
 
@@ -76,19 +78,17 @@ public class VisitGalleryService {
             throw new RuntimeException(e);
         }
 
-        return visitGalleryRepository.save(visitGallery);
+        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
     }
     @Transactional
     public void deleteVisitGallery(Long visitGalleryId) {
         VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId));
 
-        // Check if the user is authorized
-        if (visitGallery.getAddedBy().getId() != getAuthenticatedUser().getId()) {
+        if (!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())) {
             throw new InvalidCredentialsException("You are not authorized to delete this gallery.");
         }
 
-        // Delete documents associated with the gallery
         for (Document document : visitGallery.getGallery()) {
             try {
                 documentService.deleteDocument(document.getId());
@@ -96,8 +96,6 @@ public class VisitGalleryService {
                 throw new RuntimeException(e);
             }
         }
-
-        // Delete the gallery itself
         visitGalleryRepository.delete(visitGallery);
     }
 
