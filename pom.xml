@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
-			<version>6.4.3</version>
+			<version>6.4.2</version>
 		</dependency>
 
 		<!-- JWT Library (jjwt) -->
@@ -99,6 +99,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Hibernate Validator -->
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>6.2.0.Final</version>
+		</dependency>
+
 		<!-- Jakarta Validation API -->
 		<dependency>
             <groupId>jakarta.validation</groupId>
@@ -124,6 +131,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
+
 	</dependencies>
 
 	<build>

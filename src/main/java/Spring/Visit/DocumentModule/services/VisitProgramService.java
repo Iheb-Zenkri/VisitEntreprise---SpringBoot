@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -22,6 +24,8 @@ import java.util.regex.Pattern;
 
 @Service
 public class VisitProgramService {
+
+    private static final Logger logger = LoggerFactory.getLogger(VisitProgramService.class);
 
     private final VisitProgramRepository visitProgramRepository;
     private final DocumentService documentService;
@@ -38,52 +42,69 @@ public class VisitProgramService {
     @Transactional
     public VisitProgramDTO createVisitProgram(Long visitId, MultipartFile file) throws IOException {
         User authenticatedUser = getAuthenticatedUser();
+        logger.info("Creating visit program for visit ID: {}", visitId);
 
         String contentType = file.getContentType();
         if (notIsAllowedFileType(contentType)) {
-            throw new BadRequestException("this document types is not allowed.");
+            logger.warn("File type not allowed: {}", contentType);
+            throw new BadRequestException("This document type is not allowed.");
         }
 
         Document document = documentService.uploadDocument(file, file.getOriginalFilename());
+        logger.info("Document uploaded successfully: {}", document.getTitle());
 
         VisitProgram visitProgram = new VisitProgram();
         visitProgram.setVisitId(visitId);
         visitProgram.setAddedBy(authenticatedUser);
         visitProgram.setDocument(document);
-        return VisitProgramDTO.toVisitProgramDTO(visitProgramRepository.save(visitProgram));
+
+        VisitProgram savedVisitProgram = visitProgramRepository.save(visitProgram);
+        logger.info("Visit program created successfully with ID: {}", savedVisitProgram.getId());
+
+        return VisitProgramDTO.toVisitProgramDTO(savedVisitProgram);
     }
 
     @Transactional
     public VisitProgramDTO updateVisitProgramDocument(Long visitProgramId, MultipartFile file) throws IOException {
+        logger.info("Updating visit program document with ID: {}", visitProgramId);
+
         VisitProgram visitProgram = visitProgramRepository.findById(visitProgramId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Program not found"));
 
         if (!Objects.equals(visitProgram.getAddedBy().getId(), getAuthenticatedUser().getId())) {
+            logger.warn("Unauthorized attempt to update visit program ID: {}", visitProgramId);
             throw new InvalidCredentialsException("You are not allowed to update this Visit Program.");
         }
 
         String contentType = file.getContentType();
         if (notIsAllowedFileType(contentType)) {
-            throw new BadRequestException("this document types is not allowed.");
+            logger.warn("File type not allowed: {}", contentType);
+            throw new BadRequestException("This document type is not allowed.");
         }
 
         String newTitle = generateNextDocumentTitle(visitProgram.getDocument().getTitle());
-
         Document newDocument = documentService.uploadDocument(file, newTitle);
-
         documentService.deleteDocument(visitProgram.getDocument().getId());
-        visitProgram.setDocument(newDocument);
 
-        return VisitProgramDTO.toVisitProgramDTO(visitProgramRepository.save(visitProgram));
+        visitProgram.setDocument(newDocument);
+        VisitProgram savedVisitProgram = visitProgramRepository.save(visitProgram);
+        logger.info("Visit program document updated successfully for ID: {}", savedVisitProgram.getId());
+
+        return VisitProgramDTO.toVisitProgramDTO(savedVisitProgram);
     }
 
     public VisitProgramDTO getVisitProgram(Long visitProgramId) {
+        logger.info("Fetching visit program with ID: {}", visitProgramId);
+
         VisitProgram visitProgram = visitProgramRepository.findById(visitProgramId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Program not found"));
+
         return VisitProgramDTO.toVisitProgramDTO(visitProgram);
     }
 
     public VisitProgramDTO getVisitProgramByVisitId(Long visitId) {
+        logger.info("Fetching visit program by visitId: {}", visitId);
+
         VisitProgram visitProgram =  visitProgramRepository.findByVisitId(visitId)
                 .orElseThrow(() -> new ObjectNotFoundException("No Visit Program found for visitId: " + visitId));
         return VisitProgramDTO.toVisitProgramDTO(visitProgram);
@@ -91,21 +112,25 @@ public class VisitProgramService {
 
     @Transactional
     public void deleteVisitProgram(Long visitProgramId) {
+        logger.info("Deleting visit program with ID: {}", visitProgramId);
+
         VisitProgram visitProgram = visitProgramRepository.findById(visitProgramId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit Program not found"));
 
         if (!Objects.equals(visitProgram.getAddedBy().getId(), getAuthenticatedUser().getId())) {
+            logger.warn("Unauthorized attempt to delete visit program ID: {}", visitProgramId);
             throw new InvalidCredentialsException("You are not allowed to delete this Visit Program.");
         }
 
         try {
             visitProgramRepository.delete(visitProgram);
             documentService.deleteDocument(visitProgram.getDocument().getId());
+            logger.info("Visit program with ID {} and its document deleted successfully.", visitProgramId);
         } catch (IOException e) {
+            logger.error("Error while deleting visit program with ID {}: {}", visitProgramId, e.getMessage());
             throw new RuntimeException(e);
         }
     }
-
 
     // Helper methods
     private User getAuthenticatedUser() {

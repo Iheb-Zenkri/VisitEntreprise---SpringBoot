@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,26 +20,41 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private MyUserDetailsService userDetailsService; // This is your custom UserDetailsService
+    private MyUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String token = getTokenFromRequest(request);
+        if (token != null) {
+            logger.info("Received JWT token from request header");
 
-        if (token != null && jwtUtil.validateToken(token, getUsernameFromToken(token))) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(getUsernameFromToken(token));
+            if (jwtUtil.validateToken(token, getUsernameFromToken(token))) {
+                String username = getUsernameFromToken(token);
+                logger.info("Valid JWT token. Authenticating user: {}", username);
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-            );
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                logger.info("User {} authenticated successfully.", username);
+            } else {
+                logger.warn("Invalid JWT token received.");
+            }
+        } else {
+            logger.info("No JWT token found in request header.");
         }
+
         filterChain.doFilter(request, response);
     }
 

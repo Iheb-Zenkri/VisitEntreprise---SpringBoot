@@ -10,6 +10,8 @@ import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
 import Spring.Visit.UserModule.entities.User;
 import Spring.Visit.UserModule.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.Objects;
 
 @Service
 public class VisitGalleryService {
+    private static final Logger logger = LoggerFactory.getLogger(VisitGalleryService.class);
+
     private final VisitGalleryRepository visitGalleryRepository;
     private final DocumentService documentService;
     private final UserRepository userRepository;
@@ -30,41 +34,71 @@ public class VisitGalleryService {
         this.userRepository = userRepository;
     }
 
-    public VisitGalleryDTO newVisitGallery(Long visitId){
+    public VisitGalleryDTO newVisitGallery(Long visitId) {
+        logger.info("Creating new Visit Gallery for visitId: {}", visitId);
+
         VisitGallery visitGallery = new VisitGallery();
         visitGallery.setVisitId(visitId);
         visitGallery.setAddedBy(getAuthenticatedUser());
-        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
-    }
-    public VisitGalleryDTO getGalleryById(Long visitGalleryId) {
-        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
-                .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId));
-        return VisitGalleryDTO.toVisitGalleryDTO(visitGallery);
-    }
-    @Transactional
-    public VisitGalleryDTO addPictureToGallery(MultipartFile file, Long visitGalleryId) throws IOException{
-        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
-                .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery with id "+visitGalleryId+" not Found."));
 
-        if(!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())){
-            throw new InvalidCredentialsException("You are not allowed to manage Profile picture of another user.");
+        VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
+        logger.info("Visit Gallery created successfully for visitId: {}", visitId);
+        return visitGalleryDTO;
+    }
+
+    public VisitGalleryDTO getGalleryById(Long visitGalleryId) {
+        logger.info("Fetching Visit Gallery with ID: {}", visitGalleryId);
+
+        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
+                .orElseThrow(() -> {
+                    logger.error("Visit Gallery not found with ID: {}", visitGalleryId);
+                    return new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId);
+                });
+
+        VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGallery);
+        logger.info("Visit Gallery fetched successfully with ID: {}", visitGalleryId);
+        return visitGalleryDTO;
+    }
+
+    @Transactional
+    public VisitGalleryDTO addPictureToGallery(MultipartFile file, Long visitGalleryId) throws IOException {
+        logger.info("Adding picture to Visit Gallery with ID: {}", visitGalleryId);
+
+        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
+                .orElseThrow(() -> {
+                    logger.error("Visit Gallery with ID {} not found", visitGalleryId);
+                    return new ObjectNotFoundException("Visit Gallery with id " + visitGalleryId + " not Found.");
+                });
+
+        if (!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())) {
+            logger.error("Unauthorized attempt to manage Visit Gallery added by another user. visitGalleryId: {}", visitGalleryId);
+            throw new InvalidCredentialsException("You are not allowed to manage Visit Gallery added by another user.");
         }
 
-        if(!file.getContentType().startsWith("image")){
-            throw new BadRequestException("Profile Picture must be of type Image");
+        if (!file.getContentType().startsWith("image")) {
+            logger.error("Invalid file type for adding picture. File type: {}", file.getContentType());
+            throw new BadRequestException("Picture must be of type Image");
         }
 
         Document document = documentService.uploadDocument(file, "Visit Picture");
-
         visitGallery.addNewPictureToGallery(document);
 
-        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
+        VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
+        logger.info("Picture added successfully to Visit Gallery with ID: {}", visitGalleryId);
+        return visitGalleryDTO;
     }
-    public VisitGalleryDTO removePictureFromGallery(Long visitGalleryId,Long documentId){
-        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
-                .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery with id "+visitGalleryId+" not Found."));
 
-        if(!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())){
+    public VisitGalleryDTO removePictureFromGallery(Long visitGalleryId, Long documentId) {
+        logger.info("Removing picture with documentId: {} from Visit Gallery with ID: {}", documentId, visitGalleryId);
+
+        VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
+                .orElseThrow(() -> {
+                    logger.error("Visit Gallery with ID {} not found", visitGalleryId);
+                    return new ObjectNotFoundException("Visit Gallery with id " + visitGalleryId + " not Found.");
+                });
+
+        if (!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())) {
+            logger.error("Unauthorized attempt to remove picture from Visit Gallery added by another user. visitGalleryId: {}, documentId: {}", visitGalleryId, documentId);
             throw new InvalidCredentialsException("You are not allowed to manage Visit Gallery added by another user.");
         }
 
@@ -73,39 +107,57 @@ public class VisitGalleryService {
 
         try {
             documentService.deleteDocument(documentId);
+            logger.info("Document with ID {} removed from gallery and deleted successfully", documentId);
         } catch (IOException e) {
+            logger.error("Error deleting document with ID {} from gallery", documentId, e);
             throw new RuntimeException(e);
         }
 
-        return VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
+        VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));
+        logger.info("Picture removed successfully from Visit Gallery with ID: {}", visitGalleryId);
+        return visitGalleryDTO;
     }
+
     @Transactional
     public void deleteVisitGallery(Long visitGalleryId) {
+        logger.info("Deleting Visit Gallery with ID: {}", visitGalleryId);
+
         VisitGallery visitGallery = visitGalleryRepository.findById(visitGalleryId)
-                .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId));
+                .orElseThrow(() -> {
+                    logger.error("Visit Gallery with ID {} not found", visitGalleryId);
+                    return new ObjectNotFoundException("Visit Gallery not found with ID " + visitGalleryId);
+                });
 
         if (!Objects.equals(visitGallery.getAddedBy().getId(), getAuthenticatedUser().getId())) {
+            logger.error("Unauthorized attempt to delete Visit Gallery with ID: {}", visitGalleryId);
             throw new InvalidCredentialsException("You are not authorized to delete this gallery.");
         }
 
         for (Document document : visitGallery.getGallery()) {
             try {
                 documentService.deleteDocument(document.getId());
+                logger.info("Document with ID {} deleted successfully", document.getId());
             } catch (IOException e) {
+                logger.error("Error deleting document with ID {} from Visit Gallery", document.getId(), e);
                 throw new RuntimeException(e);
             }
         }
-        visitGalleryRepository.delete(visitGallery);
-    }
 
+        visitGalleryRepository.delete(visitGallery);
+        logger.info("Visit Gallery with ID {} deleted successfully", visitGalleryId);
+    }
 
     private User getAuthenticatedUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             String username = ((UserDetails) principal).getUsername();
             return userRepository.findByEmail(username)
-                    .orElseThrow(() -> new InvalidCredentialsException("User not found."));
+                    .orElseThrow(() -> {
+                        logger.error("User with email {} not found", username);
+                        return new InvalidCredentialsException("User not found.");
+                    });
         }
+        logger.error("User is not authenticated");
         throw new InvalidCredentialsException("User is not authenticated as user.");
     }
 }

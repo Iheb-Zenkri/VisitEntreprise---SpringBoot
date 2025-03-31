@@ -1,5 +1,7 @@
 package Spring.Visit.SharedModule.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,26 +14,35 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFoundException(UserNotFoundException ex) {
+        logger.error("UserNotFoundException: {}", ex.getMessage(), ex);
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(ObjectNotFoundException ex) {
+    public ResponseEntity<Map<String, Object>> handleObjectNotFoundException(ObjectNotFoundException ex) {
+        logger.error("ObjectNotFoundException: {}", ex.getMessage(), ex);
         return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        logger.warn("InvalidCredentialsException: {}", ex.getMessage(), ex);
         return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, Object>> handleBadRequestException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleBadRequestException(BadRequestException ex) {
+        logger.error("BadRequestException: {}", ex.getMessage(), ex);
         return buildResponse("An unexpected error occurred: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+        logger.error("Exception: {}", ex.getMessage(), ex);
         return buildResponse("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -1,5 +1,6 @@
 package Spring.Visit.UserModule.services;
 
+import Spring.Visit.SharedModule.exceptions.BadRequestException;
 import Spring.Visit.UserModule.dto.LoginDTO;
 import Spring.Visit.UserModule.dto.UpdateUserDTO;
 import Spring.Visit.UserModule.dto.CreateUserDTO;
@@ -16,6 +17,8 @@ import Spring.Visit.UserModule.repositories.StudentRepository;
 import Spring.Visit.UserModule.repositories.TeacherRepository;
 import Spring.Visit.UserModule.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +31,8 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
@@ -48,8 +53,10 @@ public class UserService {
             case STUDENT -> user = studentRepository.save(new Student(dto));
             case TEACHER -> user = teacherRepository.save(new Teacher(dto));
             case ADMIN -> user = adminRepository.save(new Admin(dto));
-            default -> throw new RuntimeException("Invalid role");
+            default -> throw new BadRequestException("Invalid role");
         }
+
+        logger.info("User registered successfully with email: {} and role: {}", dto.getEmail(), dto.getRole());
 
         return modelMapper.map(user, UserDTO.class);
     }
@@ -59,17 +66,19 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User with email " + loginDTO.getEmail() + " not found"));
 
         if (!bCryptPasswordEncoder.matches(loginDTO.getPassword(), dbUser.getPassword())) {
+            logger.warn("Invalid credentials for user with email: {}", loginDTO.getEmail());
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
         dbUser.setLastLogin(LocalDateTime.now());
         userRepository.save(dbUser);
 
+        logger.info("User with email {} authenticated successfully", loginDTO.getEmail());
         return jwtUtil.generateToken(dbUser.getEmail());
     }
-
     public Page<UserDTO> getAllUsers(UserRole role, Pageable pageable) {
         if (role != null) {
+            logger.info("Fetching users with role: {}", role);
             return userRepository.findByRole(role, pageable)
                     .map(user -> modelMapper.map(user, UserDTO.class));
         }
@@ -77,8 +86,8 @@ public class UserService {
                 .map(user -> modelMapper.map(user, UserDTO.class));
 
     }
-
     public UserDTO getUserByEmail(String email){
+        logger.info("Fetching user with email: {}", email);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
         return UserDTO.toUserDTO(user);
@@ -105,10 +114,12 @@ public class UserService {
         }
 
         User updatedUser = userRepository.save(user);
+        logger.info("User with id {} updated successfully", id);
         return modelMapper.map(updatedUser, UserDTO.class);
     }
 
     public void deleteUser(Long id) {
+        logger.info("Deleting user with id: {}", id);
         userRepository.deleteById(id);
     }
 

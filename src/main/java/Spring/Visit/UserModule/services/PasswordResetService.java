@@ -12,6 +12,8 @@ import Spring.Visit.UserModule.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,25 +24,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PasswordResetService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PasswordResetService.class);
+    private static final long EXPIRATION_TIME_MINUTES = 30;
+    private static final String RESET_PASSWORD_PAGE_LINK = "http://localhost:8080/reset-password.html?token=";
+
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    private static final long EXPIRATION_TIME_MINUTES = 30;
-    private static final String RESET_PASSWORD_PAGE_LINK = "http://localhost:8080/reset-password.html?token=";
-
     @Transactional
     public String forgotPassword(ForgotPasswordDTO dto) throws MessagingException {
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User with email " + dto.getEmail() + " not found"));
+                .orElseThrow(() -> {
+                    logger.error("User with email {} not found", dto.getEmail());
+                    return new UserNotFoundException("User with email " + dto.getEmail() + " not found");
+                });
 
         PasswordResetToken existingToken = tokenRepository.findByEmail(dto.getEmail());
 
         if (existingToken != null && !existingToken.isExpired()) {
-            String resetLink = RESET_PASSWORD_PAGE_LINK + existingToken.getToken();
-            emailService.sendEmail(dto.getEmail(), resetLink);
-            return "Password reset email resent with the existing token!";
+            try {
+                emailService.sendEmail(dto.getEmail(), existingToken.getToken());
+                logger.info("Password reset email resent to {}", dto.getEmail());
+                return "Password reset email resent with the existing token!";
+            } catch (MessagingException e) {
+                logger.error("Failed to resend password reset email to {}: {}", dto.getEmail(), e.getMessage());
+                throw new BadRequestException("Failed to send password reset email.");
+            }
         }else{
             tokenRepository.deleteByEmail(dto.getEmail());
         }
@@ -55,32 +66,40 @@ public class PasswordResetService {
 
         String resetLink = RESET_PASSWORD_PAGE_LINK + resetToken.getToken();
         try {
-            emailService.sendEmail(dto.getEmail(),resetLink );
+            emailService.sendEmail(dto.getEmail(), resetLink);
+            logger.info("Password reset email sent to {}", dto.getEmail());
         } catch (Exception e) {
-            System.err.println("Email sending failed: " + e.getMessage());
+            logger.error("Email sending failed to {}: {}", dto.getEmail(), e.getMessage());
             throw new BadRequestException("Failed to send password reset email.");
         }
-
         return "Password reset email sent!";
     }
 
     @Transactional
     public String resetPassword(ResetPasswordDTO dto) {
         PasswordResetToken resetToken = tokenRepository.findByToken(dto.getToken())
-                .orElseThrow(() -> new ObjectNotFoundException("Token not found"));
-
+                .orElseThrow(() -> {
+                    logger.error("Token not found for reset: {}", dto.getToken());
+                    return new ObjectNotFoundException("Token not found");
+                });
 
         if (resetToken.isExpired()) {
+            logger.warn("Attempt to reset password with expired token: {}", dto.getToken());
             throw new BadRequestException("Token has expired.");
         }
 
         User user = userRepository.findByEmail(resetToken.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User with email "+resetToken.getEmail()+" not Found."));
+                .orElseThrow(() -> {
+                    logger.error("User with email {} not found during password reset", resetToken.getEmail());
+                    return new UserNotFoundException("User with email " + resetToken.getEmail() + " not Found.");
+                });
+
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
 
         tokenRepository.delete(resetToken);
 
+        logger.info("Password successfully updated for user with email: {}", user.getEmail());
         return "Password updated successfully.";
     }
 }
