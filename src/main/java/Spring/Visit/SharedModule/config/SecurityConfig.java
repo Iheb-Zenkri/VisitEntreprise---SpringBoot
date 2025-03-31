@@ -26,7 +26,8 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeRequests()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/ws/**").permitAll() // SSE endpoint requires auth
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/reset-password.html").permitAll()// SSE endpoint requires auth
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

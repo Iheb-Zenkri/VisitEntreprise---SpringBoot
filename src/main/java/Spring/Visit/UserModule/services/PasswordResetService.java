@@ -1,5 +1,7 @@
 package Spring.Visit.UserModule.services;
 
+import Spring.Visit.SharedModule.exceptions.BadRequestException;
+import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
 import Spring.Visit.UserModule.dto.ForgotPasswordDTO;
 import Spring.Visit.UserModule.dto.ResetPasswordDTO;
 import Spring.Visit.UserModule.entities.PasswordResetToken;
@@ -25,27 +27,38 @@ public class PasswordResetService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
+    private static final long EXPIRATION_TIME_MINUTES = 30;
+    private static final String RESET_PASSWORD_PAGE_LINK = "http://localhost:8080/reset-password.html?token=";
+
     @Transactional
     public String forgotPassword(ForgotPasswordDTO dto) throws MessagingException {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User with email " + dto.getEmail() + " not found"));
 
-        tokenRepository.deleteByEmail(dto.getEmail());
+        PasswordResetToken existingToken = tokenRepository.findByEmail(dto.getEmail());
+
+        if (existingToken != null && !existingToken.isExpired()) {
+            String resetLink = RESET_PASSWORD_PAGE_LINK + existingToken.getToken();
+            emailService.sendEmail(dto.getEmail(), resetLink);
+            return "Password reset email resent with the existing token!";
+        }else{
+            tokenRepository.deleteByEmail(dto.getEmail());
+        }
 
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken(token);
         resetToken.setEmail(dto.getEmail());
-        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(EXPIRATION_TIME_MINUTES));
         tokenRepository.save(resetToken);
 
-        String resetLink = "http://localhost:8080/reset-password?token=" + resetToken.getToken();
+        String resetLink = RESET_PASSWORD_PAGE_LINK + resetToken.getToken();
         try {
-            emailService.sendEmail(dto.getEmail(), "Password Reset", "Click <a href='" + resetLink + "'>here</a> to reset your password.");
+            emailService.sendEmail(dto.getEmail(),resetLink );
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
-            throw new RuntimeException("Failed to send password reset email.");
+            throw new BadRequestException("Failed to send password reset email.");
         }
 
         return "Password reset email sent!";
@@ -54,16 +67,15 @@ public class PasswordResetService {
     @Transactional
     public String resetPassword(ResetPasswordDTO dto) {
         PasswordResetToken resetToken = tokenRepository.findByToken(dto.getToken())
-                .orElseThrow(() -> new RuntimeException("Token not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Token not found"));
 
 
-        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token has expired.");
+        if (resetToken.isExpired()) {
+            throw new BadRequestException("Token has expired.");
         }
 
         User user = userRepository.findByEmail(resetToken.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User with email " + resetToken.getEmail() + " not found"));
-
+                .orElseThrow(() -> new UserNotFoundException("User with email "+resetToken.getEmail()+" not Found."));
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
 

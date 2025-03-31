@@ -14,7 +14,7 @@ public class JwtUtil {
     private String secretKey;
 
     public String generateToken(String username) {
-        long expirationTime = 1000 * 60 * 60 * 24;
+        long expirationTime = 1000 * 60 * 60 * 24 * 7; // Tokn expires after 7 Days
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
