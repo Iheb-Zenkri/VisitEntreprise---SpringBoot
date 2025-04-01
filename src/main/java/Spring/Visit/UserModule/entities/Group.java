@@ -3,6 +3,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,7 +26,7 @@ public class Group {
 
     @OneToMany(mappedBy = "group")
     @JsonManagedReference
-    private List<Student> students;
+    private List<Student> students = new ArrayList<>();
 
     public int getNbrStudent() {
         return (students != null) ? students.size() : 0;

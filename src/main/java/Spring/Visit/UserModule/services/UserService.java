@@ -47,7 +47,7 @@ public class UserService {
         String encodedPassword = bCryptPasswordEncoder.encode(dto.getPassword());
         dto.setPassword(encodedPassword);
 
-        User user;
+        User user =  new User();
 
         switch (dto.getRole()) {
             case STUDENT -> user = studentRepository.save(new Student(dto));

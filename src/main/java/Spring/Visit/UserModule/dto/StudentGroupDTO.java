@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ public class StudentGroupDTO {
         return new StudentGroupDTO(
                 group.getId(),
                 group.getName(),
-                group.getStudents().stream().map(StudentDTO::toStudentDTO).toList()
+                group.getStudents() == null ? Collections.emptyList() : group.getStudents().stream().map(StudentDTO::toStudentDTO).toList()
         );
     }
 }
