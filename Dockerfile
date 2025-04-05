@@ -14,7 +14,7 @@ FROM openjdk:21-jdk-slim
 EXPOSE 8080
 
 # Copy the built jar file from the build stage
-COPY --from=build /target/Visit-1.0-SNAPSHOT.jar app.jar
+COPY --from=build /target/Visit-0.0.1-SNAPSHOT.jar app.jar
 
 # Run the Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]
