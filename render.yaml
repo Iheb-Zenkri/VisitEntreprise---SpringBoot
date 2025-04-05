@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: springboot-app
-    env: java
-    buildCommand: "./mvnw clean install"
-    startCommand: "java -jar target/*.jar"
-    plan: free
-    branch: main
