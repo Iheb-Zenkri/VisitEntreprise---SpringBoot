@@ -2,14 +2,14 @@
 FROM ubuntu:latest AS build
 
 RUN apt-get update
-RUN apt-get install openjdk-17-jdk maven -y
+RUN apt-get install openjdk-21-jdk maven -y
 COPY . .
 
 # Build the application using Maven
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 
 EXPOSE 8080
 
