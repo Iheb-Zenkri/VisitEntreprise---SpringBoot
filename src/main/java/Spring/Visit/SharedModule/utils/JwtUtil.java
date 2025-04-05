@@ -17,8 +17,9 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public String generateToken(String username) {
-        long expirationTime = 1000 * 60 * 60 * 24 * 7; // Token expires after 7 days
+    public String generateToken(String username,boolean expiresIn30Days) {
+        long expirationTime = 1000 * 60 * 60 * 24 ; // Token expires after 1 days
+        if(expiresIn30Days) expirationTime*=30;
         String token = Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

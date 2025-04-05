@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -16,14 +19,18 @@ public class PasswordResetController {
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordDTO dto) throws MessagingException {
+    public ResponseEntity<Map<String,String>> forgotPassword(@RequestBody ForgotPasswordDTO dto) throws MessagingException {
         String response = passwordResetService.forgotPassword(dto);
-        return ResponseEntity.ok(response);
+        Map<String, String> responseJSON = new HashMap<>();
+        responseJSON.put("message",response);
+        return ResponseEntity.ok(responseJSON);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO dto) {
+    public ResponseEntity<Map<String,String>> resetPassword(@RequestBody ResetPasswordDTO dto) {
         String response = passwordResetService.resetPassword(dto);
-        return ResponseEntity.ok(response);
+        Map<String, String> responseJSON = new HashMap<>();
+        responseJSON.put("message",response);
+        return ResponseEntity.ok(responseJSON);
     }
 }

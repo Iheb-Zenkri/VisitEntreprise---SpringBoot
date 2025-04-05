@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -26,8 +28,8 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public String login(@RequestBody LoginDTO user) {
-        return userService.authenticateUser(user);
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDTO user) {
+        return ResponseEntity.ok(userService.authenticateUser(user));
     }
 
     @GetMapping("/users")
