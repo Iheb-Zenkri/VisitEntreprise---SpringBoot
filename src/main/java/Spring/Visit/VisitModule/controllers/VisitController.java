@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/visits")
@@ -38,8 +39,7 @@ public class VisitController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVisit(@PathVariable Long id) {
-        visitService.deleteVisit(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Map<String,String>> deleteVisit(@PathVariable Long id) {
+        return ResponseEntity.ok(visitService.deleteVisit(id));
     }
 }

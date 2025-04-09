@@ -2,38 +2,46 @@ package Spring.Visit.VisitModule.entities;
 
 import Spring.Visit.VisitModule.enums.VisitStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Visit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull(message = "Visit's Date  is required")
     private LocalDateTime visitDate;
+
+    @NotNull(message = "Visit's Location is required")
     private String location;
+
 
     @Enumerated(EnumType.STRING)
     private VisitStatus status;
 
     private String notes;
 
-    /*@OneToMany(mappedBy = "visit", cascade = CascadeType.ALL)
-    private List<Documents> documents;*/
+    @NotNull(message = "Created at timestamp is required")
+    private LocalDateTime createdAt;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @NotNull(message = "Updated at timestamp is required")
+    private LocalDateTime updatedAt;
 
-    public LocalDateTime getVisitDate() { return visitDate; }
-    public void setVisitDate(LocalDateTime visitDate) { this.visitDate = visitDate; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-
-    public VisitStatus getStatus() { return status; }
-    public void setStatus(VisitStatus status) { this.status = status; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        status = VisitStatus.PLANNED;
+    }
 }
