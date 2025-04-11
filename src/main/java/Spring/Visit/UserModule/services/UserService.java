@@ -84,7 +84,7 @@ public class UserService {
         dbUser.setLastLogin(LocalDateTime.now());
         dbUser = userRepository.save(dbUser);
 
-        String token = jwtUtil.generateToken(dbUser.getEmail(),loginDTO.isExpiresIn30Days());
+        String token = jwtUtil.generateToken(dbUser.getEmail(),dbUser.getRole().toString(),loginDTO.isExpiresIn30Days());
         if(loginDTO.isExpiresIn30Days()){
             logger.info("User with email {} authenticated successfully for 30 Days", loginDTO.getEmail());
         }else{
