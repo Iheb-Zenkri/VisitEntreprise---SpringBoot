@@ -1,6 +1,5 @@
 package Spring.Visit.VisitModule.controllers;
 
-
 import Spring.Visit.VisitModule.entities.Visit;
 import Spring.Visit.VisitModule.services.VisitService;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public class VisitController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String,String>> deleteVisit(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> deleteVisit(@PathVariable Long id) {
         return ResponseEntity.ok(visitService.deleteVisit(id));
     }
 }

@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Data
@@ -19,12 +18,11 @@ public class Visit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Visit's Date  is required")
+    @NotNull(message = "Visit's Date is required")
     private LocalDateTime visitDate;
 
     @NotNull(message = "Visit's Location is required")
     private String location;
-
 
     @Enumerated(EnumType.STRING)
     private VisitStatus status;
@@ -37,11 +35,22 @@ public class Visit {
     @NotNull(message = "Updated at timestamp is required")
     private LocalDateTime updatedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    @OneToOne(mappedBy = "visit", cascade = CascadeType.ALL)
+    private Feedback feedback;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         status = VisitStatus.PLANNED;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

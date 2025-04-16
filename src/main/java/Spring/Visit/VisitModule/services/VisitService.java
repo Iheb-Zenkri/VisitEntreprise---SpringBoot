@@ -22,7 +22,8 @@ public class VisitService {
     }
 
     public Visit getVisitById(Long id) {
-        return visitRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
+        return visitRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit not found with id: " + id));
     }
 
     public List<Visit> getAllVisits() {
@@ -35,18 +36,17 @@ public class VisitService {
         if(updatedVisit.getLocation() != null) visit.setLocation(updatedVisit.getLocation());
         if(updatedVisit.getStatus() != null) visit.setStatus(updatedVisit.getStatus());
         if(updatedVisit.getNotes() != null) visit.setNotes(updatedVisit.getNotes());
+        if(updatedVisit.getCompany() != null) visit.setCompany(updatedVisit.getCompany());
         return visitRepository.save(visit);
     }
 
-    public Map<String,String> deleteVisit(Long id) {
+    public Map<String, String> deleteVisit(Long id) {
+        Visit visit = getVisitById(id);
+        String companyName = visit.getCompany() != null ? visit.getCompany().getName() : "unknown";
         visitRepository.deleteById(id);
-        Map<String,String> message = new HashMap<>();
 
-        // after developping the company entity and link it
-        // to Visit entity , replace ... with Company.name
-        message.put("message","La visite à ... a été supprimée avec succées.");
-
-        return message ;
+        Map<String, String> message = new HashMap<>();
+        message.put("message", "La visite à " + companyName + " a été supprimée avec succès.");
+        return message;
     }
 }
-
