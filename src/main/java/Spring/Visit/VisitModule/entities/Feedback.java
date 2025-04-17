@@ -1,6 +1,9 @@
 package Spring.Visit.VisitModule.entities;
 
+import Spring.Visit.UserModule.entities.User;
 import Spring.Visit.VisitModule.enums.FeedbackRating;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -18,23 +21,37 @@ public class Feedback {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
-
     @Enumerated(EnumType.STRING)
     private FeedbackRating rating;
 
+    @NotNull(message = "Comment is required")
     private String comment;
 
     @NotNull(message = "Created at timestamp is required")
     private LocalDateTime createdAt;
 
-    @OneToOne
+    @NotNull(message = "Updated at timestamp is required")
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "added_by", nullable = false)
+    private User addedBy;
+
+    @ManyToOne
     @JoinColumn(name = "visit_id")
+    @JsonBackReference
     private Visit visit;
+
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        rating = FeedbackRating.ONE_STAR ;
     }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
 }

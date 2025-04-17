@@ -31,7 +31,7 @@ public class CompanyService {
     public Company updateCompany(Long id, Company updatedCompany) {
         Company company = getCompanyById(id);
         if(updatedCompany.getName() != null) company.setName(updatedCompany.getName());
-        if(updatedCompany.getAdresse() != null) company.setAdresse(updatedCompany.getAdresse());
+        if(updatedCompany.getAddress() != null) company.setAddress(updatedCompany.getAddress());
         if(updatedCompany.getContactEmail() != null) company.setContactEmail(updatedCompany.getContactEmail());
         if(updatedCompany.getContactPhone() != null) company.setContactPhone(updatedCompany.getContactPhone());
         if(updatedCompany.getExpertiseDomain() != null) company.setExpertiseDomain(updatedCompany.getExpertiseDomain());

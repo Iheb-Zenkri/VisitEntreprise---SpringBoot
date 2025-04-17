@@ -1,5 +1,7 @@
 package Spring.Visit.VisitModule.controllers;
 
+import Spring.Visit.VisitModule.Dtos.FeedBackCreationDTO;
+import Spring.Visit.VisitModule.Dtos.FeedbackDTO;
 import Spring.Visit.VisitModule.entities.Feedback;
 import Spring.Visit.VisitModule.services.FeedbackService;
 import org.springframework.http.ResponseEntity;
@@ -17,23 +19,23 @@ public class FeedbackController {
     }
 
     @PostMapping
-    public ResponseEntity<Feedback> createFeedback(@RequestBody Feedback feedback) {
+    public ResponseEntity<FeedbackDTO> createFeedback(@RequestBody FeedBackCreationDTO feedback) {
         return ResponseEntity.ok(feedbackService.createFeedback(feedback));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Feedback> getFeedbackById(@PathVariable Long id) {
+    public ResponseEntity<FeedbackDTO> getFeedbackById(@PathVariable Long id) {
         return ResponseEntity.ok(feedbackService.getFeedbackById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Feedback>> getAllFeedback() {
+    public ResponseEntity<List<FeedbackDTO>> getAllFeedback() {
         return ResponseEntity.ok(feedbackService.getAllFeedback());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @RequestBody Feedback feedback) {
-        return ResponseEntity.ok(feedbackService.updateFeedback(id, feedback));
+    public ResponseEntity<FeedbackDTO> updateFeedback(@PathVariable Long id, @RequestBody String comment) {
+        return ResponseEntity.ok(feedbackService.updateFeedback(id, comment));
     }
 
     @DeleteMapping("/{id}")

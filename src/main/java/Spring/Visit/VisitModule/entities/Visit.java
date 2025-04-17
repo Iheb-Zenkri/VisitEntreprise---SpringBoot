@@ -1,6 +1,8 @@
 package Spring.Visit.VisitModule.entities;
 
 import Spring.Visit.VisitModule.enums.VisitStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -37,10 +40,12 @@ public class Visit {
 
     @ManyToOne
     @JoinColumn(name = "company_id")
+    @JsonBackReference
     private Company company;
 
-    @OneToOne(mappedBy = "visit", cascade = CascadeType.ALL)
-    private Feedback feedback;
+    @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Feedback> feedbacks;
 
     @PrePersist
     protected void onCreate() {
