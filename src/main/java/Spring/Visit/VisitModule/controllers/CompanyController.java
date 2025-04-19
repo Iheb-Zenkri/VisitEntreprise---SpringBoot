@@ -1,5 +1,6 @@
 package Spring.Visit.VisitModule.controllers;
 
+import Spring.Visit.VisitModule.Dtos.CompanyDTO;
 import Spring.Visit.VisitModule.entities.Company;
 import Spring.Visit.VisitModule.services.CompanyService;
 import org.springframework.http.ResponseEntity;
@@ -17,22 +18,22 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<Company> createCompany(@RequestBody Company company) {
-        return ResponseEntity.ok(companyService.createCompany(company));
+    public ResponseEntity<CompanyDTO> createCompany(@RequestBody CompanyDTO companyDTO) {
+        return ResponseEntity.ok(companyService.createCompany(companyDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Company> getCompanyById(@PathVariable Long id) {
+    public ResponseEntity<CompanyDTO> getCompanyById(@PathVariable Long id) {
         return ResponseEntity.ok(companyService.getCompanyById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Company>> getAllCompanies() {
+    public ResponseEntity<List<CompanyDTO>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Company> updateCompany(@PathVariable Long id, @RequestBody Company company) {
+    public ResponseEntity<CompanyDTO> updateCompany(@PathVariable Long id, @RequestBody Company company) {
         return ResponseEntity.ok(companyService.updateCompany(id, company));
     }
 

@@ -1,6 +1,7 @@
 package Spring.Visit.VisitModule.services;
 
 import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
+import Spring.Visit.VisitModule.Dtos.CompanyDTO;
 import Spring.Visit.VisitModule.entities.Company;
 import Spring.Visit.VisitModule.repositories.CompanyRepository;
 import org.springframework.stereotype.Service;
@@ -15,21 +16,31 @@ public class CompanyService {
         this.companyRepository = companyRepository;
     }
 
-    public Company createCompany(Company company) {
-        return companyRepository.save(company);
+    public CompanyDTO createCompany(CompanyDTO companyDTO) {
+        Company company = new Company();
+        company.setAddress(company.getAddress());
+        company.setName(companyDTO.getName());
+        company.setContactEmail(companyDTO.getContactEmail());
+        company.setContactPhone(companyDTO.getContactPhone());
+        company.setExpertiseDomain(companyDTO.getExpertiseDomain());
+        company.setRelevanceScore(companyDTO.getRelevanceScore());
+        company.setVisitFrequency(companyDTO.getVisitFrequency());
+        return CompanyDTO.toCompanyDTO(companyRepository.save(company));
     }
 
-    public Company getCompanyById(Long id) {
-        return companyRepository.findById(id)
+    public CompanyDTO getCompanyById(Long id) {
+        Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Company not found with id: " + id));
+        return CompanyDTO.toCompanyDTO(company);
     }
 
-    public List<Company> getAllCompanies() {
-        return companyRepository.findAll();
+    public List<CompanyDTO> getAllCompanies() {
+        return companyRepository.findAll().stream().map(CompanyDTO::toCompanyDTO).toList();
     }
 
-    public Company updateCompany(Long id, Company updatedCompany) {
-        Company company = getCompanyById(id);
+    public CompanyDTO updateCompany(Long id, Company updatedCompany) {
+        Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Company not found with id: " + id));
         if(updatedCompany.getName() != null) company.setName(updatedCompany.getName());
         if(updatedCompany.getAddress() != null) company.setAddress(updatedCompany.getAddress());
         if(updatedCompany.getContactEmail() != null) company.setContactEmail(updatedCompany.getContactEmail());
@@ -37,7 +48,7 @@ public class CompanyService {
         if(updatedCompany.getExpertiseDomain() != null) company.setExpertiseDomain(updatedCompany.getExpertiseDomain());
         company.setRelevanceScore(updatedCompany.getRelevanceScore());
         company.setVisitFrequency(updatedCompany.getVisitFrequency());
-        return companyRepository.save(company);
+        return CompanyDTO.toCompanyDTO(companyRepository.save(company));
     }
 
     public void deleteCompany(Long id) {

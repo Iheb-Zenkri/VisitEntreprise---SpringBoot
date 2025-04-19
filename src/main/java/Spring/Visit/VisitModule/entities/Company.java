@@ -1,6 +1,5 @@
 package Spring.Visit.VisitModule.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
@@ -40,6 +39,5 @@ public class Company {
     private int visitFrequency;
 
     @OneToMany(mappedBy = "company")
-    @JsonManagedReference
     private List<Visit> visits = new ArrayList<>();
 }

@@ -1,7 +1,9 @@
 package Spring.Visit.VisitModule.entities;
 
+import Spring.Visit.UserModule.entities.Teacher;
 import Spring.Visit.VisitModule.enums.VisitStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -38,14 +40,19 @@ public class Visit {
     @NotNull(message = "Updated at timestamp is required")
     private LocalDateTime updatedAt;
 
+    @NotNull(message = "Company is required")
     @ManyToOne
     @JoinColumn(name = "company_id")
-    @JsonBackReference
     private Company company;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnore
     private List<Feedback> feedbacks;
+
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    @JsonManagedReference
+    private Teacher responsible;
 
     @PrePersist
     protected void onCreate() {
