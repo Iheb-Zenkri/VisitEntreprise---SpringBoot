@@ -18,7 +18,6 @@ public class VisitGallery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Placeholder for the Visit entity (will be replaced with ManyToOne when Visit is created)
     @ManyToOne
     @JoinColumn(name = "visit_id")
     private Visit visit;

@@ -51,6 +51,11 @@ public class FeedbackService {
         return feedbackRepository.findAll().stream().map(FeedbackDTO::toFeedBackDTO).toList();
     }
 
+    public List<FeedbackDTO> getAllFeedbackByVisit(Long visitId) {
+        List<Feedback> feedbackList = feedbackRepository.findByVisitId(visitId);
+        return feedbackList.stream().map(FeedbackDTO::toFeedBackDTO).toList();
+    }
+
     public FeedbackDTO updateFeedback(Long id, String comment) {
         Feedback feedback = feedbackRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Feedback not found with id: " + id));

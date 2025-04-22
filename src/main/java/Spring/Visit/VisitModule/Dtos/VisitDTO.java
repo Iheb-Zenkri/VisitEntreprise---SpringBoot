@@ -22,6 +22,7 @@ public class VisitDTO {
     private LocalDateTime updatedAt;
     private TeacherDTO responsible;
     private CompanyDTO company ;
+    private int feedbacksCount;
 
     public static VisitDTO toVisitDTO(Visit visit){
         return new VisitDTO(
@@ -33,7 +34,8 @@ public class VisitDTO {
                 visit.getCreatedAt(),
                 visit.getUpdatedAt(),
                 visit.getResponsible() == null ? new TeacherDTO() : TeacherDTO.toTeacherDTO(visit.getResponsible()),
-                visit.getCompany() == null ? new CompanyDTO() : CompanyDTO.toCompanyDTO(visit.getCompany())
+                visit.getCompany() == null ? new CompanyDTO() : CompanyDTO.toCompanyDTO(visit.getCompany()),
+                visit.getFeedbacks().size()
         );
     }
 }

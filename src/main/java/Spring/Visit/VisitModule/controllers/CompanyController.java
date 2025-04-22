@@ -33,8 +33,8 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CompanyDTO> updateCompany(@PathVariable Long id, @RequestBody Company company) {
-        return ResponseEntity.ok(companyService.updateCompany(id, company));
+    public ResponseEntity<CompanyDTO> updateCompany(@PathVariable Long id, @RequestBody CompanyDTO companyDTO) {
+        return ResponseEntity.ok(companyService.updateCompany(id, companyDTO));
     }
 
     @DeleteMapping("/{id}")

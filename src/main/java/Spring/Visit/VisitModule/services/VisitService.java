@@ -13,7 +13,9 @@ import Spring.Visit.VisitModule.repositories.CompanyRepository;
 import Spring.Visit.VisitModule.repositories.VisitRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +54,21 @@ public class VisitService {
         return VisitDTO.toVisitDTO(visit);
     }
 
-    public List<VisitDTO> getAllVisits() {
-        return visitRepository.findAll().stream().map(VisitDTO::toVisitDTO).toList();
+    public List<VisitDTO> getfinishedVisits() {
+        return visitRepository.findAll()
+                .stream().map(VisitDTO::toVisitDTO)
+                .filter(visit -> visit.getVisitDate().isBefore(LocalDate.now().atStartOfDay()))
+                .sorted(Comparator.comparing(VisitDTO::getVisitDate).reversed()) // Newest first
+                .toList();
+    }
+
+    public List<VisitDTO> getUnfinishedVisits() {
+        return visitRepository.findAll()
+                .stream()
+                .map(VisitDTO::toVisitDTO)
+                .filter(visit -> !visit.getVisitDate().isBefore(LocalDate.now().atStartOfDay()))
+                .sorted(Comparator.comparing(VisitDTO::getVisitDate))
+                .toList();
     }
 
     public VisitDTO updateVisit(Long id, Visit updatedVisit) {

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class CompanyDTO {
     private Long id;
     private String name;
-    private String adress;
+    private String address;
     private String contactEmail;
     private String contactPhone;
     private String expertiseDomain;

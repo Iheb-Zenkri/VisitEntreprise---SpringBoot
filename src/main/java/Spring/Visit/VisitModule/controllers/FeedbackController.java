@@ -33,6 +33,11 @@ public class FeedbackController {
         return ResponseEntity.ok(feedbackService.getAllFeedback());
     }
 
+    @GetMapping("/visit/{visitId}")
+    public ResponseEntity<List<FeedbackDTO>> getAllFeedbacksByVisit(@PathVariable Long visitId) {
+        List<FeedbackDTO> feedbacks = feedbackService.getAllFeedbackByVisit(visitId);
+        return ResponseEntity.ok(feedbacks);
+    }
     @PutMapping("/{id}")
     public ResponseEntity<FeedbackDTO> updateFeedback(@PathVariable Long id, @RequestBody String comment) {
         return ResponseEntity.ok(feedbackService.updateFeedback(id, comment));

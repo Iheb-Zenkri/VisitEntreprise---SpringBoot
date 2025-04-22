@@ -18,7 +18,7 @@ public class CompanyService {
 
     public CompanyDTO createCompany(CompanyDTO companyDTO) {
         Company company = new Company();
-        company.setAddress(company.getAddress());
+        company.setAddress(companyDTO.getAddress());
         company.setName(companyDTO.getName());
         company.setContactEmail(companyDTO.getContactEmail());
         company.setContactPhone(companyDTO.getContactPhone());
@@ -38,7 +38,7 @@ public class CompanyService {
         return companyRepository.findAll().stream().map(CompanyDTO::toCompanyDTO).toList();
     }
 
-    public CompanyDTO updateCompany(Long id, Company updatedCompany) {
+    public CompanyDTO updateCompany(Long id, CompanyDTO updatedCompany) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Company not found with id: " + id));
         if(updatedCompany.getName() != null) company.setName(updatedCompany.getName());

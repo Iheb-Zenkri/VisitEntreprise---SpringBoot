@@ -29,9 +29,14 @@ public class VisitController {
         return ResponseEntity.ok(visitService.getVisitById(id));
     }
 
-    @GetMapping
+    @GetMapping("/finished")
     public ResponseEntity<List<VisitDTO>> getAllVisits() {
-        return ResponseEntity.ok(visitService.getAllVisits());
+        return ResponseEntity.ok(visitService.getfinishedVisits());
+    }
+
+    @GetMapping("/unfinished")
+    public ResponseEntity<List<VisitDTO>> getUnfinishedVisits() {
+        return ResponseEntity.ok(visitService.getUnfinishedVisits());
     }
 
     @PutMapping("/{id}")
