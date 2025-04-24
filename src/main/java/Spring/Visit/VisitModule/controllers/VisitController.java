@@ -31,7 +31,7 @@ public class VisitController {
 
     @GetMapping("/finished")
     public ResponseEntity<List<VisitDTO>> getAllVisits() {
-        return ResponseEntity.ok(visitService.getfinishedVisits());
+        return ResponseEntity.ok(visitService.getFinishedVisits());
     }
 
     @GetMapping("/unfinished")
@@ -58,6 +58,18 @@ public class VisitController {
     @DeleteMapping("/{visitId}/responsible/{teacherId}")
     public ResponseEntity<VisitDTO> removeResponsibleFromVisit(@PathVariable Long visitId, @PathVariable Long teacherId) {
         VisitDTO updatedVisit = visitService.removeResponsibleFromVisit(visitId, teacherId);
+        return ResponseEntity.ok(updatedVisit);
+    }
+
+    @PutMapping("/{visitId}/student-group/{groupId}")
+    public ResponseEntity<VisitDTO> addStudentGroupToVisit(@PathVariable Long visitId, @PathVariable Long groupId) {
+        VisitDTO updatedVisit = visitService.addStudentGroupToVisit(visitId, groupId);
+        return ResponseEntity.ok(updatedVisit);
+    }
+
+    @DeleteMapping("/{visitId}/student-group/{groupId}")
+    public ResponseEntity<VisitDTO> removeStudentGroupFromVisit(@PathVariable Long visitId, @PathVariable Long groupId) {
+        VisitDTO updatedVisit = visitService.removeStudentGroupFromVisit(visitId, groupId);
         return ResponseEntity.ok(updatedVisit);
     }
 }

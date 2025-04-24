@@ -35,6 +35,7 @@ public class Feedback {
 
     @ManyToOne
     @JoinColumn(name = "added_by", nullable = false)
+    @JsonManagedReference
     private User addedBy;
 
     @ManyToOne

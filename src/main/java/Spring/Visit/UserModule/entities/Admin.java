@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "admins")
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Admin extends User {
     public Admin(Long id, String firstName, String lastName, String email, String password, UserRole role, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime lastLogin) {
-        super(id, firstName, lastName, email, password, role, createdAt, updatedAt, lastLogin);
+        super(id, firstName, lastName, email, password, role, createdAt, updatedAt, lastLogin,new ArrayList<>());
     }
 
     public Admin(CreateUserDTO user){

@@ -57,7 +57,8 @@ public class UserService {
 
         String encodedPassword = bCryptPasswordEncoder.encode(dto.getPassword());
         dto.setPassword(encodedPassword);
-
+        dto.setFirstName(capitalize(dto.getFirstName()));
+        dto.setLastName(capitalize(dto.getLastName()));
         User user = new User();
 
         switch (dto.getRole()) {
@@ -124,10 +125,10 @@ public class UserService {
             user.setEmail(dto.getEmail());
         }
         if (dto.getFirstName() != null) {
-            user.setFirstName(dto.getFirstName());
+            user.setFirstName(capitalize(dto.getFirstName()));
         }
         if (dto.getLastName() != null) {
-            user.setLastName(dto.getLastName());
+            user.setLastName(capitalize(dto.getLastName()));
         }
         if (dto.getPassword() != null) {
             user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword())); // Hash password before saving
@@ -143,5 +144,8 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-
+    public String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
 }

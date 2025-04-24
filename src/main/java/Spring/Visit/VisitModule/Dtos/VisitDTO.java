@@ -23,6 +23,7 @@ public class VisitDTO {
     private TeacherDTO responsible;
     private CompanyDTO company ;
     private int feedbacksCount;
+    private int studentCount;
 
     public static VisitDTO toVisitDTO(Visit visit){
         return new VisitDTO(
@@ -35,7 +36,8 @@ public class VisitDTO {
                 visit.getUpdatedAt(),
                 visit.getResponsible() == null ? new TeacherDTO() : TeacherDTO.toTeacherDTO(visit.getResponsible()),
                 visit.getCompany() == null ? new CompanyDTO() : CompanyDTO.toCompanyDTO(visit.getCompany()),
-                visit.getFeedbacks().size()
+                visit.getFeedbacks().size(),
+                visit.getStudentGroup() == null ? 0 : visit.getStudentGroup().getNbrStudent()
         );
     }
 }

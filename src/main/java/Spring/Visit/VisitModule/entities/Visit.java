@@ -1,5 +1,6 @@
 package Spring.Visit.VisitModule.entities;
 
+import Spring.Visit.UserModule.entities.Group;
 import Spring.Visit.UserModule.entities.Teacher;
 import Spring.Visit.VisitModule.enums.VisitStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -53,6 +54,11 @@ public class Visit {
     @JoinColumn(name = "teacher_id")
     @JsonManagedReference
     private Teacher responsible;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    @JsonManagedReference
+    private Group studentGroup;
 
     @PrePersist
     protected void onCreate() {

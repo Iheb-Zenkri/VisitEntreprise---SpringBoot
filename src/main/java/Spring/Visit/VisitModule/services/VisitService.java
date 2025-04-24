@@ -3,7 +3,10 @@ package Spring.Visit.VisitModule.services;
 import Spring.Visit.SharedModule.exceptions.BadRequestException;
 import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
 import Spring.Visit.SharedModule.exceptions.UserNotFoundException;
+import Spring.Visit.UserModule.entities.Group;
+import Spring.Visit.UserModule.entities.Student;
 import Spring.Visit.UserModule.entities.Teacher;
+import Spring.Visit.UserModule.repositories.GroupRepository;
 import Spring.Visit.UserModule.repositories.TeacherRepository;
 import Spring.Visit.VisitModule.Dtos.VisitCreationDTO;
 import Spring.Visit.VisitModule.Dtos.VisitDTO;
@@ -24,13 +27,14 @@ import java.util.Map;
 public class VisitService {
     private final VisitRepository visitRepository;
     private final TeacherRepository teacherRepository;
-
     private final CompanyRepository companyRepository;
+    private final GroupRepository groupRepository;
 
-    public VisitService(VisitRepository visitRepository, TeacherRepository teacherRepository, CompanyRepository companyRepository) {
+    public VisitService(VisitRepository visitRepository, TeacherRepository teacherRepository, CompanyRepository companyRepository, GroupRepository groupRepository) {
         this.visitRepository = visitRepository;
         this.teacherRepository = teacherRepository;
         this.companyRepository = companyRepository;
+        this.groupRepository = groupRepository;
     }
 
     public VisitDTO createVisit(VisitCreationDTO visitCreationDTO) {
@@ -54,7 +58,7 @@ public class VisitService {
         return VisitDTO.toVisitDTO(visit);
     }
 
-    public List<VisitDTO> getfinishedVisits() {
+    public List<VisitDTO> getFinishedVisits() {
         return visitRepository.findAll()
                 .stream().map(VisitDTO::toVisitDTO)
                 .filter(visit -> visit.getVisitDate().isBefore(LocalDate.now().atStartOfDay()))
@@ -99,12 +103,11 @@ public class VisitService {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
 
-        if(teacher.getVisits().contains(visit)) {
+        if(!teacher.getVisits().contains(visit)) {
+            teacher.getVisits().add(visit);
             visit.setResponsible(teacher);
-            return VisitDTO.toVisitDTO(visitRepository.save(visit));
         }
-        teacher.getVisits().add(visit);
-        visit.setResponsible(teacher);
+
         teacherRepository.save(teacher);
         return VisitDTO.toVisitDTO(visitRepository.save(visit));
     }
@@ -132,4 +135,34 @@ public class VisitService {
         teacherRepository.save(teacher);
         return VisitDTO.toVisitDTO(visitRepository.save(visit));
         }
+
+    public VisitDTO addStudentGroupToVisit(Long visitId, Long groupId){
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ObjectNotFoundException("Group not found"));
+
+        if(!group.getVisits().contains(visit)){
+            group.getVisits().add(visit);
+            groupRepository.save(group);
+        }
+        visit.setStudentGroup(group);
+        return VisitDTO.toVisitDTO(visitRepository.save(visit));
+    }
+
+    public VisitDTO removeStudentGroupFromVisit(Long visitId, Long groupId){
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ObjectNotFoundException("Group not found"));
+
+        group.getVisits().remove(visit);
+        groupRepository.save(group);
+        visit.setStudentGroup(null);
+        return VisitDTO.toVisitDTO(visitRepository.save(visit));
+    }
+
+
+
+
 }
