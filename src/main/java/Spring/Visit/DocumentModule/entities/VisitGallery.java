@@ -1,6 +1,7 @@
 package Spring.Visit.DocumentModule.entities;
 
 import Spring.Visit.UserModule.entities.User;
+import Spring.Visit.VisitModule.entities.Visit;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,13 +18,9 @@ public class VisitGallery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Placeholder for the Visit entity (will be replaced with ManyToOne when Visit is created)
-    /*
-        @ManyToOne
-        @JoinColumn(name = "visit_id")
-        private Visit visit;
-    */
-    private Long visitId;
+    @ManyToOne
+    @JoinColumn(name = "visit_id")
+    private Visit visit;
 
     @ManyToOne
     @JoinColumn(name = "added_by", nullable = false)

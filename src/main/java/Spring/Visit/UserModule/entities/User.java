@@ -1,6 +1,8 @@
 package Spring.Visit.UserModule.entities;
 import Spring.Visit.UserModule.dto.CreateUserDTO;
 import Spring.Visit.UserModule.enums.UserRole;
+import Spring.Visit.VisitModule.entities.Feedback;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +11,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -50,6 +54,10 @@ public class User {
 
     @NotNull(message = "Updated at timestamp is required")
     private LocalDateTime updatedAt;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "addedBy")
+    private List<Feedback> usersFeedbacks = new ArrayList<>();
 
     public User(CreateUserDTO user) {
         email = user.getEmail();

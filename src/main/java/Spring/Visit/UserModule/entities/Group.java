@@ -1,4 +1,6 @@
 package Spring.Visit.UserModule.entities;
+import Spring.Visit.VisitModule.entities.Visit;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +29,10 @@ public class Group {
     @OneToMany(mappedBy = "group")
     @JsonManagedReference
     private List<Student> students = new ArrayList<>();
+
+    @OneToMany(mappedBy = "studentGroup")
+    @JsonBackReference
+    private List<Visit> visits = new ArrayList<>();
 
     public int getNbrStudent() {
         return (students != null) ? students.size() : 0;

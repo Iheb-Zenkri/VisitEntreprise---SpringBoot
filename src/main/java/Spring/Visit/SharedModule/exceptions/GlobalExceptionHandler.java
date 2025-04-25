@@ -37,13 +37,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, Object>> handleBadRequestException(BadRequestException ex) {
         logger.error("BadRequestException: {}", ex.getMessage(), ex);
-        return buildResponse("An unexpected error occurred: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
         logger.error("Exception: {}", ex.getMessage(), ex);
-        return buildResponse("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildResponse("Une erreur inattendue s'est produite : " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(String message, HttpStatus status) {

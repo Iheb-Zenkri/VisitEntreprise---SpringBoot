@@ -3,12 +3,15 @@ package Spring.Visit.UserModule.controllers;
 import Spring.Visit.UserModule.dto.StudentGroupDTO;
 import Spring.Visit.UserModule.entities.Group;
 import Spring.Visit.UserModule.services.GroupService;
+import Spring.Visit.VisitModule.Dtos.VisitDTO;
+import Spring.Visit.VisitModule.entities.Visit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -27,9 +30,25 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getGroupById(id));
     }
 
+    @GetMapping("/student-visits/{studentId}")
+    public ResponseEntity<List<VisitDTO>> getStudentVisits(@PathVariable Long studentId) {
+        return ResponseEntity.ok(groupService.getStudentVisits(studentId));
+    }
+    @GetMapping("/student-stats/{studentId}")
+    public ResponseEntity<Map<String, Object>> getStudentStats(@PathVariable Long studentId) {
+        return ResponseEntity.ok(groupService.getStudentStats(studentId));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<StudentGroupDTO> getStudentGroup(@PathVariable Long studentId) {
+        return ResponseEntity.ok(groupService.getStudentGroup(studentId));
+    }
+
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<Group> createGroup(@RequestParam String name) {
+    public ResponseEntity<StudentGroupDTO> createGroup(@RequestParam String name) {
         return ResponseEntity.ok(groupService.createGroup(name));
     }
 

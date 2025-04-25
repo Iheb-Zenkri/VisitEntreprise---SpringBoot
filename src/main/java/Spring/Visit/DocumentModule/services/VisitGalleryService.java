@@ -9,6 +9,9 @@ import Spring.Visit.SharedModule.exceptions.InvalidCredentialsException;
 import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
 import Spring.Visit.UserModule.entities.User;
 import Spring.Visit.UserModule.repositories.UserRepository;
+import Spring.Visit.VisitModule.entities.Visit;
+import Spring.Visit.VisitModule.repositories.VisitRepository;
+import Spring.Visit.VisitModule.services.VisitService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,18 +30,22 @@ public class VisitGalleryService {
     private final VisitGalleryRepository visitGalleryRepository;
     private final DocumentService documentService;
     private final UserRepository userRepository;
+    private final VisitRepository visitRepository;
 
-    public VisitGalleryService(VisitGalleryRepository visitGalleryRepository, DocumentService documentService, UserRepository userRepository) {
+    public VisitGalleryService(VisitGalleryRepository visitGalleryRepository, DocumentService documentService, UserRepository userRepository, VisitRepository visitRepository) {
         this.visitGalleryRepository = visitGalleryRepository;
         this.documentService = documentService;
         this.userRepository = userRepository;
+        this.visitRepository = visitRepository;
     }
 
     public VisitGalleryDTO newVisitGallery(Long visitId) {
         logger.info("Creating new Visit Gallery for visitId: {}", visitId);
 
         VisitGallery visitGallery = new VisitGallery();
-        visitGallery.setVisitId(visitId);
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
+        visitGallery.setVisit(visit);
         visitGallery.setAddedBy(getAuthenticatedUser());
 
         VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGalleryRepository.save(visitGallery));

@@ -1,6 +1,7 @@
 package Spring.Visit.DocumentModule.entities;
 
 import Spring.Visit.UserModule.entities.User;
+import Spring.Visit.VisitModule.entities.Visit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class VisitProgram {
     @JoinColumn(name = "added_by", nullable = false)
     private User addedBy;
 
-    @Column(name = "visit_id", nullable = false,unique = true)
-    private Long visitId;
+    @ManyToOne
+    @JoinColumn(name = "visit_id")
+    private Visit visit;
 }

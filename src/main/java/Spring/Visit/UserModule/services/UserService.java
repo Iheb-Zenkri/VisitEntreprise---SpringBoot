@@ -27,6 +27,8 @@ import Spring.Visit.SharedModule.utils.JwtUtil;
 import org.modelmapper.ModelMapper;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -44,16 +46,26 @@ public class UserService {
 
 
     public UserDTO registerUser(CreateUserDTO dto) {
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new BadRequestException("L'email existe déjà");
+        }
+
+        if (!dto.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new BadRequestException("Format d'email invalide");
+        }
+
         String encodedPassword = bCryptPasswordEncoder.encode(dto.getPassword());
         dto.setPassword(encodedPassword);
-
-        User user =  new User();
+        dto.setFirstName(capitalize(dto.getFirstName()));
+        dto.setLastName(capitalize(dto.getLastName()));
+        User user = new User();
 
         switch (dto.getRole()) {
             case STUDENT -> user = studentRepository.save(new Student(dto));
             case TEACHER -> user = teacherRepository.save(new Teacher(dto));
             case ADMIN -> user = adminRepository.save(new Admin(dto));
-            default -> throw new BadRequestException("Invalid role");
+            default -> throw new BadRequestException("Rôle invalide");
         }
 
         logger.info("User registered successfully with email: {} and role: {}", dto.getEmail(), dto.getRole());
@@ -61,21 +73,30 @@ public class UserService {
         return modelMapper.map(user, UserDTO.class);
     }
 
-    public String authenticateUser(LoginDTO loginDTO) {
+    public Map<String, Object> authenticateUser(LoginDTO loginDTO) {
         User dbUser = userRepository.findByEmail(loginDTO.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User with email " + loginDTO.getEmail() + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("Utilisateur avec l'email " + loginDTO.getEmail() + " non trouvé"));
 
         if (!bCryptPasswordEncoder.matches(loginDTO.getPassword(), dbUser.getPassword())) {
             logger.warn("Invalid credentials for user with email: {}", loginDTO.getEmail());
-            throw new InvalidCredentialsException("Invalid email or password");
+            throw new InvalidCredentialsException("Email ou mot de passe invalide");
         }
 
         dbUser.setLastLogin(LocalDateTime.now());
-        userRepository.save(dbUser);
+        dbUser = userRepository.save(dbUser);
 
-        logger.info("User with email {} authenticated successfully", loginDTO.getEmail());
-        return jwtUtil.generateToken(dbUser.getEmail());
+        String token = jwtUtil.generateToken(dbUser.getEmail(),dbUser.getRole().toString(),loginDTO.isExpiresIn30Days());
+        if(loginDTO.isExpiresIn30Days()){
+            logger.info("User with email {} authenticated successfully for 30 Days", loginDTO.getEmail());
+        }else{
+            logger.info("User with email {} authenticated successfully for 24 Hours", loginDTO.getEmail());
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user",UserDTO.toUserDTO(dbUser));
+        return response ;
     }
+
     public Page<UserDTO> getAllUsers(UserRole role, Pageable pageable) {
         if (role != null) {
             logger.info("Fetching users with role: {}", role);
@@ -104,10 +125,10 @@ public class UserService {
             user.setEmail(dto.getEmail());
         }
         if (dto.getFirstName() != null) {
-            user.setFirstName(dto.getFirstName());
+            user.setFirstName(capitalize(dto.getFirstName()));
         }
         if (dto.getLastName() != null) {
-            user.setLastName(dto.getLastName());
+            user.setLastName(capitalize(dto.getLastName()));
         }
         if (dto.getPassword() != null) {
             user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword())); // Hash password before saving
@@ -123,5 +144,8 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-
+    public String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
 }

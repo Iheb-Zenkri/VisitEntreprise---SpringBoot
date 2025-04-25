@@ -21,7 +21,7 @@ public class VisitGalleryDTO {
         return new VisitGalleryDTO(
             visitGallery.getId(),
             visitGallery.getAddedBy().getId(),
-            visitGallery.getVisitId(),
+            visitGallery.getVisit().getId(),
             visitGallery.getGallery() != null ? visitGallery.getGallery().stream().map(DocumentDTO::toDocumentDTO).toList() : Collections.emptyList()
         );
     }

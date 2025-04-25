@@ -17,10 +17,12 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public String generateToken(String username) {
-        long expirationTime = 1000 * 60 * 60 * 24 * 7; // Token expires after 7 days
+    public String generateToken(String username,String role,boolean expiresIn30Days) {
+        long expirationTime = 1000 * 60 * 60 * 24 ; // Token expires after 1 days
+        if(expiresIn30Days) expirationTime*=30;
         String token = Jwts.builder()
                 .setSubject(username)
+                .claim("role",role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)

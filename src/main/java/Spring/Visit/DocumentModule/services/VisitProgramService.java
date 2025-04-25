@@ -9,6 +9,8 @@ import Spring.Visit.SharedModule.exceptions.InvalidCredentialsException;
 import Spring.Visit.SharedModule.exceptions.ObjectNotFoundException;
 import Spring.Visit.UserModule.entities.User;
 import Spring.Visit.UserModule.repositories.UserRepository;
+import Spring.Visit.VisitModule.entities.Visit;
+import Spring.Visit.VisitModule.repositories.VisitRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,19 +32,24 @@ public class VisitProgramService {
     private final VisitProgramRepository visitProgramRepository;
     private final DocumentService documentService;
     private final UserRepository userRepository;
+    private final VisitRepository visitRepository ;
 
     public VisitProgramService(VisitProgramRepository visitProgramRepository,
                                DocumentService documentService,
-                               UserRepository userRepository) {
+                               UserRepository userRepository, VisitRepository visitRepository) {
         this.visitProgramRepository = visitProgramRepository;
         this.documentService = documentService;
         this.userRepository = userRepository;
+        this.visitRepository = visitRepository;
     }
 
     @Transactional
     public VisitProgramDTO createVisitProgram(Long visitId, MultipartFile file) throws IOException {
         User authenticatedUser = getAuthenticatedUser();
         logger.info("Creating visit program for visit ID: {}", visitId);
+
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
 
         String contentType = file.getContentType();
         if (notIsAllowedFileType(contentType)) {
@@ -54,7 +61,7 @@ public class VisitProgramService {
         logger.info("Document uploaded successfully: {}", document.getTitle());
 
         VisitProgram visitProgram = new VisitProgram();
-        visitProgram.setVisitId(visitId);
+        visitProgram.setVisit(visit);
         visitProgram.setAddedBy(authenticatedUser);
         visitProgram.setDocument(document);
 
