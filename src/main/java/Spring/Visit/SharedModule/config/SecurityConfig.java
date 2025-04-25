@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/reset-password.html").permitAll() // SSE endpoint requires auth
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
                 .and()
                 .httpBasic();
 
@@ -56,4 +56,5 @@ public class SecurityConfig {
         logger.info("Creating BCryptPasswordEncoder instance.");
         return new BCryptPasswordEncoder();
     }
+
 }
