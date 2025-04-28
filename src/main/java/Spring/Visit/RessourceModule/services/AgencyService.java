@@ -1,5 +1,6 @@
 package Spring.Visit.RessourceModule.services;
 
+import Spring.Visit.RessourceModule.dto.AgencyDTO;
 import Spring.Visit.RessourceModule.entities.Agency;
 import Spring.Visit.RessourceModule.repositories.AgencyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +19,16 @@ public class AgencyService {
         this.agencyRepository = agencyRepository;
     }
 
-    public List<Agency> getAgencies() {
-        return agencyRepository.findAll();
+    public List<AgencyDTO> getAgencies() {
+        return agencyRepository.findAll().stream().map(AgencyDTO::toAgencyDTO).toList();
     }
 
-    public void addAgency(Agency agency) {
+    public AgencyDTO addAgency(Agency agency) {
         Optional<Agency> agencyOptional = agencyRepository.findByContactEmail(agency.getContactEmail());
         if (agencyOptional.isPresent()) {
             throw new IllegalStateException("Email déjà utilisé");
         }
-        agencyRepository.save(agency);
+        return AgencyDTO.toAgencyDTO(agencyRepository.save(agency));
     }
 
     public void deleteAgency(Long agencyId) {
@@ -38,7 +39,7 @@ public class AgencyService {
         agencyRepository.deleteById(agencyId);
     }
 
-    public void updateAgency(Long agencyId, String name, String address, String contactEmail, String contactPhone, Double rentFrequency) {
+    public AgencyDTO updateAgency(Long agencyId, String name, String address, String contactEmail, String contactPhone, Double rentFrequency) {
         Agency agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new IllegalStateException("L'agence avec l'id " + agencyId + " n'existe pas."));
 
@@ -66,6 +67,6 @@ public class AgencyService {
             agency.setRentFrequency(rentFrequency);
         }
 
-        agencyRepository.save(agency);
+       return AgencyDTO.toAgencyDTO(agencyRepository.save(agency));
     }
 }

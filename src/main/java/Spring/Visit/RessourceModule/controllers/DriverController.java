@@ -21,14 +21,14 @@ public class DriverController {
     }
 
     @GetMapping
-    public List<Driver> getDrivers() {
+    public List<DriverDTO> getDrivers() {
         return driverService.getDrivers();
     }
 
 
     @PostMapping
-    public void addDriver(@RequestBody @Valid DriverDTO driverDTO) {
-        driverService.addDriver(driverDTO);
+    public DriverDTO addDriver(@RequestBody @Valid DriverDTO driverDTO) {
+        return driverService.addDriver(driverDTO);
     }
 
 

@@ -20,13 +20,13 @@ public class BusController {
     }
 
     @GetMapping
-    public List<Bus> GetBus(){
+    public List<BusDTO> GetBus(){
         return busService.GetBus();
     }
 
     @PostMapping
-    public void addBus(@RequestBody Bus bus){
-        busService.addBus(bus) ;
+    public BusDTO addBus(@RequestBody Bus bus){
+        return busService.addBus(bus) ;
     }
     /*
 @PostMapping
@@ -44,5 +44,14 @@ public void addBus(@RequestBody @Valid BusDTO busDTO) {
             @RequestParam BusAvailability availability){
         busService.updateBus(busId, availability);}
 
+    @PutMapping("/{busId}/agency/{agencyId}")
+    public BusDTO addBusToAgency(@PathVariable Long busId,@PathVariable Long agencyId){
+        return busService.addBusToAgency(busId,agencyId);
+    }
 
+
+    @PutMapping("/{busId}/driver/{driverId}")
+    public BusDTO addDriverToBus(@PathVariable Long busId,@PathVariable Long driverId){
+        return busService.addDriverToBus(busId,driverId);
+    }
 }

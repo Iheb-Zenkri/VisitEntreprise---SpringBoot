@@ -3,6 +3,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -29,5 +32,8 @@ public class Agency {
 
     @Column(name = "rent_frequency", nullable = false)
     private double rentFrequency;
+
+    @OneToMany(mappedBy = "agency", cascade = CascadeType.ALL)
+    private List<Bus> buses = new ArrayList<>();
 
 }

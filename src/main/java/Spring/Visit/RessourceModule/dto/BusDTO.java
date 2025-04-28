@@ -1,5 +1,6 @@
 package Spring.Visit.RessourceModule.dto;
 
+import Spring.Visit.RessourceModule.entities.Bus;
 import Spring.Visit.RessourceModule.enums.BusAvailability;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -9,8 +10,10 @@ import lombok.*;
 @NoArgsConstructor
 public class BusDTO {
 
-    @NotBlank(message = "Le nom du bus est obligatoire")
-    private String name;
+    private Long id;
+
+    @NotBlank(message = "La capacitie du bus est obligatoire")
+    private int capacity;
 
     @NotBlank(message = "Le numéro d'immatriculation est obligatoire")
     private String registrationNumber;
@@ -18,6 +21,18 @@ public class BusDTO {
     @NotNull(message = "La disponibilité est obligatoire")
     private BusAvailability availability;
 
-    @NotNull(message = "L'ID de l'agence est obligatoire")
-    private Long agencyId;
+    private DriverDTO driverDTO;
+
+    private AgencyDTO agencyDTO;
+
+    public static BusDTO toBusDTO(Bus bus){
+        return new BusDTO(
+                bus.getId(),
+                bus.getCapacity(),
+                bus.getLicensePlate(),
+                bus.getAvailability(),
+                bus.getDriver() == null ? new DriverDTO() : DriverDTO.toDriverDTO(bus.getDriver()),
+                bus.getAgency() == null ? new AgencyDTO() : AgencyDTO.toAgencyDTO(bus.getAgency())
+        );
+    }
 }

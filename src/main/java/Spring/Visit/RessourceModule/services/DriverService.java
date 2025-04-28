@@ -19,11 +19,11 @@ public class DriverService {
         this.driverRepository = driverRepository;
     }
 
-    public List<Driver> getDrivers() {
-        return driverRepository.findAll();
+    public List<DriverDTO> getDrivers() {
+        return driverRepository.findAll().stream().map(DriverDTO::toDriverDTO).toList();
     }
 
-    public void addDriver(DriverDTO driverDTO) {
+    public DriverDTO addDriver(DriverDTO driverDTO) {
         Optional<Driver> driverOptional = driverRepository.findByLicenseNumber(driverDTO.getLicenseNumber());
         if (driverOptional.isPresent()) {
             throw new IllegalStateException("Numéro de permis déjà utilisé.");
@@ -38,7 +38,7 @@ public class DriverService {
                 driverDTO.getLicenseNumber(),
                 driverDTO.getContactPhone()
         );
-        driverRepository.save(driver);
+        return DriverDTO.toDriverDTO(driverRepository.save(driver));
 
     }
 

@@ -24,6 +24,9 @@ public class Driver {
     @Column(name = "contact_phone", nullable = false, unique = true)
     private long contactPhone;
 
+    @OneToOne(mappedBy = "driver")
+    private Bus bus;
+
     public Driver(String name, Long licenseNumber, Long contactPhone) {
         this.name=name;
         this.licenseNumber=licenseNumber;

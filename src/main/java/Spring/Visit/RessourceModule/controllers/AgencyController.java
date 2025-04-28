@@ -1,5 +1,6 @@
 package Spring.Visit.RessourceModule.controllers;
 
+import Spring.Visit.RessourceModule.dto.AgencyDTO;
 import Spring.Visit.RessourceModule.entities.Agency;
 import Spring.Visit.RessourceModule.services.AgencyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,13 @@ public class AgencyController {
     }
 
     @GetMapping
-    public List<Agency> getAgencies() {
+    public List<AgencyDTO> getAgencies() {
         return agencyService.getAgencies();
     }
 
     @PostMapping
-    public void addAgency(@RequestBody Agency agency) {
-        agencyService.addAgency(agency);
+    public AgencyDTO addAgency(@RequestBody Agency agency) {
+        return agencyService.addAgency(agency);
     }
 
     @DeleteMapping(path = "{agencyId}")

@@ -28,6 +28,13 @@ public class Bus {
     @Column(name = "availability", nullable = false)
     private BusAvailability availability;
 
+    @OneToOne
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
+
+    @ManyToOne
+    @JoinColumn(name = "agency_id")
+    private Agency agency;
 
 
 }
