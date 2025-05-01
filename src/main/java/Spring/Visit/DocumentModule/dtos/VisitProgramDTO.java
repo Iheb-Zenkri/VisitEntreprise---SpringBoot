@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 public class VisitProgramDTO {
     private Long id;
     private Long userId;
-    private VisitDTO visitDTO;
+    private Long visitId;
     private DocumentDTO documentDTO;
 
     public static VisitProgramDTO toVisitProgramDTO(VisitProgram visitProgram){
         return new VisitProgramDTO(
                 visitProgram.getId(),
                 visitProgram.getAddedBy().getId(),
-                visitProgram.getVisit() == null ? new VisitDTO() : VisitDTO.toVisitDTO(visitProgram.getVisit()),
+                visitProgram.getVisit().getId(),
                 DocumentDTO.toDocumentDTO(visitProgram.getDocument())
         );
     }

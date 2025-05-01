@@ -7,7 +7,9 @@ import Spring.Visit.VisitModule.services.FeedbackService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/feedback")
@@ -44,8 +46,10 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFeedback(@PathVariable Long id) {
+    public ResponseEntity<Map<String,String>> deleteFeedback(@PathVariable Long id) {
         feedbackService.deleteFeedback(id);
-        return ResponseEntity.noContent().build();
+        Map<String,String> response = new HashMap<>();
+        response.put("message","Commentaire supprimé avec succès.");
+        return ResponseEntity.ok(response);
     }
 }

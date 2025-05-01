@@ -2,6 +2,7 @@ package Spring.Visit.DocumentModule.services;
 
 import Spring.Visit.DocumentModule.dtos.VisitProgramDTO;
 import Spring.Visit.DocumentModule.entities.Document;
+import Spring.Visit.DocumentModule.entities.ProfilePicture;
 import Spring.Visit.DocumentModule.entities.VisitProgram;
 import Spring.Visit.DocumentModule.repositories.VisitProgramRepository;
 import Spring.Visit.SharedModule.exceptions.BadRequestException;
@@ -12,6 +13,7 @@ import Spring.Visit.UserModule.repositories.UserRepository;
 import Spring.Visit.VisitModule.entities.Visit;
 import Spring.Visit.VisitModule.repositories.VisitRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,7 +49,6 @@ public class VisitProgramService {
     @Transactional
     public VisitProgramDTO createVisitProgram(Long visitId, MultipartFile file) throws IOException {
         User authenticatedUser = getAuthenticatedUser();
-        logger.info("Creating visit program for visit ID: {}", visitId);
 
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
@@ -109,14 +111,18 @@ public class VisitProgramService {
         return VisitProgramDTO.toVisitProgramDTO(visitProgram);
     }
 
-    public VisitProgramDTO getVisitProgramByVisitId(Long visitId) {
-        logger.info("Fetching visit program by visitId: {}", visitId);
-
-        VisitProgram visitProgram =  visitProgramRepository.findByVisitId(visitId)
-                .orElseThrow(() -> new ObjectNotFoundException("No Visit Program found for visitId: " + visitId));
-        return VisitProgramDTO.toVisitProgramDTO(visitProgram);
+    public List<VisitProgramDTO> getVisitProgramByVisitId(Long visitId) {
+        List<VisitProgram> visitProgram =  visitProgramRepository.findByVisitId(visitId);
+        return visitProgram.stream().map(VisitProgramDTO::toVisitProgramDTO).toList();
     }
 
+    public FileSystemResource getVisitProgramFileByDocumentId(Long documentId) {
+        try {
+            return documentService.getDocumentFile(documentService.getDocument(documentId).getFilePath());
+        } catch (IOException e) {
+            throw new ObjectNotFoundException("Profile Picture not found");
+        }
+    }
     @Transactional
     public void deleteVisitProgram(Long visitProgramId) {
         logger.info("Deleting visit program with ID: {}", visitProgramId);
@@ -152,27 +158,14 @@ public class VisitProgramService {
 
 
     private boolean notIsAllowedFileType(String contentType) {
-        return contentType == null || (!contentType.equals("application/pdf") && // PDF documents
-                !contentType.equals("application/msword") && // DOC (older Word format)
-                !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") && // DOCX (new Word format)
-                !contentType.equals("application/vnd.ms-excel") && // XLS (older Excel format)
-                !contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && // XLSX (new Excel format)
-                !contentType.equals("application/vnd.ms-powerpoint") && // PPT (older PowerPoint format)
-                !contentType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation") && // PPTX (new PowerPoint format)
-                !contentType.equals("text/plain") && // TXT (plain text files)
-                !contentType.equals("text/csv"));
+        return contentType == null || (!contentType.equals("application/pdf"));
     }
 
-    /**
-     * Generates the next document title by incrementing the suffix number.
-     * Example: "doc" -> "doc (1)", "file (3)" -> "file (4)"
-     */
     private String generateNextDocumentTitle(String oldTitle) {
         if (oldTitle == null || oldTitle.isEmpty()) {
             return "Document (1)";
         }
 
-        // Regex to find "(number)" at the end of the title
         Pattern pattern = Pattern.compile("^(.*) \\((\\d+)\\)$");
         Matcher matcher = pattern.matcher(oldTitle);
 
