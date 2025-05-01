@@ -15,6 +15,7 @@ import Spring.Visit.VisitModule.services.VisitService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class VisitGalleryService {
@@ -42,6 +44,10 @@ public class VisitGalleryService {
     public VisitGalleryDTO newVisitGallery(Long visitId) {
         logger.info("Creating new Visit Gallery for visitId: {}", visitId);
 
+        Optional<VisitGallery> optionalVisitGallery = visitGalleryRepository.findByVisitId(visitId);
+        if(optionalVisitGallery.isPresent()){
+            return VisitGalleryDTO.toVisitGalleryDTO(optionalVisitGallery.get());
+        }
         VisitGallery visitGallery = new VisitGallery();
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit not found"));
@@ -65,6 +71,22 @@ public class VisitGalleryService {
         VisitGalleryDTO visitGalleryDTO = VisitGalleryDTO.toVisitGalleryDTO(visitGallery);
         logger.info("Visit Gallery fetched successfully with ID: {}", visitGalleryId);
         return visitGalleryDTO;
+    }
+
+    public VisitGalleryDTO getGalleryByVisitId(Long visitId) {
+        VisitGallery visitGallery = visitGalleryRepository.findByVisitId(visitId)
+                .orElseThrow(() -> new ObjectNotFoundException("Visit Gallery not found with ID " + visitId));
+
+        return VisitGalleryDTO.toVisitGalleryDTO(visitGallery);
+    }
+
+
+    public FileSystemResource getVisitGalleryPicture(Long documentId) {
+        try {
+            return documentService.getDocumentFile(documentService.getDocument(documentId).getFilePath());
+        } catch (IOException e) {
+            throw new ObjectNotFoundException("Profile Picture not found");
+        }
     }
 
     @Transactional
