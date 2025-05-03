@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/visit-programs")
@@ -62,8 +64,10 @@ public class VisitProgramController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteVisitProgram(@PathVariable Long id) {
+    public ResponseEntity<Map<String,String>> deleteVisitProgram(@PathVariable Long id) {
         visitProgramService.deleteVisitProgram(id);
-        return ResponseEntity.ok("Visit Program deleted successfully.");
+        Map<String,String> response = new HashMap<>();
+        response.put("message",("Le document de visite a été supprimé"));
+        return ResponseEntity.ok(response);
     }
 }

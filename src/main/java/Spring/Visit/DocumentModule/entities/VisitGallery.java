@@ -18,7 +18,7 @@ public class VisitGallery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "visit_id")
     private Visit visit;
 

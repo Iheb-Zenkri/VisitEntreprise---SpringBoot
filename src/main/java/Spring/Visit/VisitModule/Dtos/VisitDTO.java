@@ -36,7 +36,7 @@ public class VisitDTO {
                 visit.getUpdatedAt(),
                 visit.getResponsible() == null ? new TeacherDTO() : TeacherDTO.toTeacherDTO(visit.getResponsible()),
                 visit.getCompany() == null ? new CompanyDTO() : CompanyDTO.toCompanyDTO(visit.getCompany()),
-                visit.getFeedbacks().size(),
+                visit.getFeedbacks() == null ? 0 : visit.getFeedbacks().size(),
                 visit.getStudentGroup() == null ? 0 : visit.getStudentGroup().getNbrStudent()
         );
     }

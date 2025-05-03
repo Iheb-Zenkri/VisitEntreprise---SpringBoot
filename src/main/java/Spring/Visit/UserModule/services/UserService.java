@@ -28,6 +28,7 @@ import org.modelmapper.ModelMapper;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -97,14 +98,14 @@ public class UserService {
         return response ;
     }
 
-    public Page<UserDTO> getAllUsers(UserRole role, Pageable pageable) {
+    public List<UserDTO> getAllUsers(UserRole role) {
         if (role != null) {
             logger.info("Fetching users with role: {}", role);
-            return userRepository.findByRole(role, pageable)
-                    .map(user -> modelMapper.map(user, UserDTO.class));
+            return userRepository.findByRole(role)
+                    .stream().map(user -> modelMapper.map(user, UserDTO.class)).toList();
         }
-        return userRepository.findAll(pageable)
-                .map(user -> modelMapper.map(user, UserDTO.class));
+        return userRepository.findAll()
+                .stream().map(user -> modelMapper.map(user, UserDTO.class)).toList();
 
     }
     public UserDTO getUserByEmail(String email){

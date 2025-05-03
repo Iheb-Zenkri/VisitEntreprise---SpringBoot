@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,8 +34,8 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<Page<UserDTO>> getAllUsers(@RequestParam(required = false) UserRole role, Pageable pageable) {
-        return ResponseEntity.ok(userService.getAllUsers(role, pageable));
+    public ResponseEntity<List<UserDTO>> getAllUsers(@RequestParam(required = false) UserRole role) {
+        return ResponseEntity.ok(userService.getAllUsers(role));
     }
     @GetMapping("/users/{email}")
     public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {

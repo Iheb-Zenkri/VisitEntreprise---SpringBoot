@@ -6,7 +6,9 @@ import Spring.Visit.VisitModule.services.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/companies")
@@ -38,8 +40,10 @@ public class CompanyController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
+    public ResponseEntity<Map<String,String>> deleteCompany(@PathVariable Long id) {
         companyService.deleteCompany(id);
-        return ResponseEntity.noContent().build();
+        Map<String,String> response = new HashMap<>();
+        response.put("message","l'entreprise a a été supprimé avec succès.");
+        return ResponseEntity.ok(response);
     }
 }

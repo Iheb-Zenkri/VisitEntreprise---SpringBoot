@@ -1,5 +1,7 @@
 package Spring.Visit.VisitModule.entities;
 
+import Spring.Visit.DocumentModule.entities.VisitGallery;
+import Spring.Visit.DocumentModule.entities.VisitProgram;
 import Spring.Visit.UserModule.entities.Group;
 import Spring.Visit.UserModule.entities.Teacher;
 import Spring.Visit.VisitModule.enums.VisitStatus;
@@ -46,7 +48,7 @@ public class Visit {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private List<Feedback> feedbacks;
 
@@ -59,6 +61,14 @@ public class Visit {
     @JoinColumn(name = "group_id")
     @JsonManagedReference
     private Group studentGroup;
+
+    @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    private List<VisitProgram> programList;
+
+    @OneToOne(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    private VisitGallery visitGallery;
 
     @PrePersist
     protected void onCreate() {

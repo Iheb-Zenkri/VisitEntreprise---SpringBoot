@@ -40,7 +40,7 @@ public class VisitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VisitDTO> updateVisit(@PathVariable Long id, @RequestBody Visit visit) {
+    public ResponseEntity<VisitDTO> updateVisit(@PathVariable Long id, @RequestBody VisitCreationDTO visit) {
         return ResponseEntity.ok(visitService.updateVisit(id, visit));
     }
 

@@ -75,14 +75,12 @@ public class VisitService {
                 .toList();
     }
 
-    public VisitDTO updateVisit(Long id, Visit updatedVisit) {
+    public VisitDTO updateVisit(Long id, VisitCreationDTO updatedVisit) {
         Visit visit = visitRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Visit not found with id: " + id));
         if(updatedVisit.getVisitDate() != null) visit.setVisitDate(updatedVisit.getVisitDate());
-        if(updatedVisit.getLocation() != null) visit.setLocation(updatedVisit.getLocation());
         if(updatedVisit.getStatus() != null) visit.setStatus(updatedVisit.getStatus());
         if(updatedVisit.getNotes() != null) visit.setNotes(updatedVisit.getNotes());
-        if(updatedVisit.getCompany() != null) visit.setCompany(updatedVisit.getCompany());
         return VisitDTO.toVisitDTO(visitRepository.save(visit));
     }
 
@@ -91,6 +89,7 @@ public class VisitService {
                 .orElseThrow(() -> new ObjectNotFoundException("Visit not found with id: " + id));
         String companyName = visit.getCompany() != null ? visit.getCompany().getName() : "unknown";
         visitRepository.deleteById(id);
+
 
         Map<String, String> message = new HashMap<>();
         message.put("message", "La visite à " + companyName + " a été supprimée avec succès.");

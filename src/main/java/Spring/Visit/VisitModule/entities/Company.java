@@ -1,5 +1,6 @@
 package Spring.Visit.VisitModule.entities;
 
+import Spring.Visit.DocumentModule.entities.CompanyPicture;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
@@ -38,6 +39,10 @@ public class Company {
     @Size(message = "La fréquence doit etre positive",min = 0)
     private int visitFrequency;
 
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Visit> visits = new ArrayList<>();
+
+    @OneToOne(mappedBy = "company", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private CompanyPicture companyPicture;
+
 }
